@@ -1,0 +1,11 @@
+image: alpine:latest
+
+pipelines:
+  default:
+    - step:
+        name: "RUN Sample Linux Commands"
+        script:
+          - apk add --no-cache bash curl git
+          - echo "current date：$(date)"
+          - mkdir /demo && echo 'hello pipelines'>>/demo/output.txt
+          - cat /demo/output.txt
