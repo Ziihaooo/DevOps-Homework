@@ -1,8 +1,0 @@
-version: '3.8'
-services:
-  app:
-    image: ${DOCKER_IMAGE_NAME}:${TAG}
-    env_file:
-      - .env
-    command: ["python3", "--version"]
-
