@@ -1,0 +1,29 @@
+image: docker:24.0.7
+options:
+  size: 2x
+pipelines:
+  branches:
+    'DEV-18': 
+      - step:
+          name: Build, Lint, Test, Push
+          services:
+            - docker
+          caches:
+            - docker
+          script:
+            - apk add --no-cache bash make python3 py3-pip curl
+            - pip3 install hadolint
+            # Export pipeline variables as Makefile expects
+            - export DOCKER_IMAGE_NAME="${DOCKER_IMAGE_NAME:-myuser/myapp}"
+            - export TAG="${BITBUCKET_BRANCH//\//-}-${BITBUCKET_BUILD_NUMBER}"
+            - export DOCKER_USERNAME="$WEI_USERNAME"
+            - export DOCKER_PASSWORD="$WEI_PASSWORD"
+            - make lint
+            - make build
+            - make run
+            - make push
+definitions:
+  services:
+    docker:
+      memory: 3072
+
