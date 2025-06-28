@@ -1,0 +1,28 @@
+image: docker:20.10.24
+
+options:
+  docker: true
+
+pipelines:
+  branches:
+    DEV-188:
+      - step:
+          name: Build and Push Docker Image
+          services:
+            - docker
+          caches:
+            - docker
+          script:
+            - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+            - docker build -t $DOCKER_USERNAME/online-order-management-system:latest .
+            - docker push $DOCKER_USERNAME/online-order-management-system:latest
+
+      - step:
+          name: Pull and Run Docker Image
+          services:
+            - docker
+          caches:
+            - docker
+          script:
+            - docker pull $DOCKER_USERNAME/online-order-management-system:latest
+            - docker run --rm $DOCKER_USERNAME/online-order-management-system:latest
