@@ -1,0 +1,22 @@
+image: docker:20.10.24
+options:
+  docker: true
+
+pipelines:
+  branches:
+    DEV-21:
+      - step:
+          name: Lint • Build • Test • Push
+          services:
+            - docker
+          caches:
+            - docker
+          script:
+            - apk add --no-cache make docker-compose curl
+            - curl -Lo /usr/local/bin/hadolint \
+                https://github.com/hadolint/hadolint/releases/download/v2.12.0/hadolint-Linux-x86_64
+            - chmod +x /usr/local/bin/hadolint
+            - make lint
+            - make build
+            - make run
+            - make push

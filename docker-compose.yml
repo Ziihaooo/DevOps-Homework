@@ -1,0 +1,5 @@
+version: '3.9'
+services:
+  app:
+    image: "${DOCKER_IMAGE_NAME}:${TAG}"
+    command: ["echo", "🚀 Running ${DOCKER_IMAGE_NAME}:${TAG} inside compose"]
