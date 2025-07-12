@@ -1,22 +1,18 @@
-TAG ?= $(shell git rev-parse --short HEAD)
+IMAGE        := landing-page
+CONTAINER    := landing-page
 
-env:
-@echo "DOCKER_IMAGE_NAME=$(DOCKER_IMAGE_NAME)" > .env
-@echo "TAG=$(TAG)" >> .env
-@echo "✅  Generated .env with DOCKER_IMAGE_NAME=$(DOCKER_IMAGE_NAME) TAG=$(TAG)"
+.PHONY: build run clean kill8080
 
-lint: env
-hadolint Dockerfile
+build:
+@docker build -t $(IMAGE) .
 
-build: env
-docker build -t $(DOCKER_IMAGE_NAME):$(TAG) .
+kill8080:
+@lsof -ti tcp:8080 | xargs -r kill || true
 
-run: env
-docker compose --env-file .env up --abort-on-container-exit
-
-push:
-echo "$$DOCKER_PASSWORD" | docker login -u "$$DOCKER_USERNAME" --password-stdin
-docker push $(DOCKER_IMAGE_NAME):$(TAG)
+run: kill8080
+@docker compose up -d
+@echo "Site is starting at http://localhost:8080"; sleep 2
+@open http://localhost:8080 2>/dev/null || xdg-open http://localhost:8080 || true
 
 clean:
-docker compose --env-file .env down --remove-orphans
+@docker compose down --rmi all --volumes --remove-orphans || true

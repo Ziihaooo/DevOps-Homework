@@ -1,5 +1,10 @@
-version: '3.9'
+version: "3.9"
+
 services:
-  app:
-    image: "${DOCKER_IMAGE_NAME}:${TAG}"
-    command: ["echo", "🚀 Running ${DOCKER_IMAGE_NAME}:${TAG} inside compose"]
+  web:
+    image: landing-page
+    build: .
+    container_name: landing-page
+    ports:
+      - "8080:8080"
+    user: "1001:1001"
