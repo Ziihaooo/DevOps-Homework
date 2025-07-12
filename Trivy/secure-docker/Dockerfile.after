@@ -1,0 +1,14 @@
+# -------- Secure Dockerfile --------
+FROM ubuntu:focal-20210713
+
+# 1. 打开非交互模式
+ENV DEBIAN_FRONTEND=noninteractive
+
+# 2. 更新 & 升级 & 清理
+RUN apt-get update \
+ && apt-get -y upgrade --with-new-pkgs \
+ && apt-get -y autoremove \
+ && apt-get clean \
+ && rm -rf /var/lib/apt/lists/*
+
+CMD ["bash", "-c", "echo Secure image is running"]
