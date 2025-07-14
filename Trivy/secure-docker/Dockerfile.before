@@ -1,2 +1,0 @@
-FROM ubuntu:focal-20210713
-CMD ["bash", "-c", "echo Hello insecure baseline"]
