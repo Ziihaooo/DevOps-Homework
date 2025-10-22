@@ -3,7 +3,7 @@ services:
   static_html:
     #build image based on the Dockerfile in my current directory
     build: .
-    container-name: web
+    container_name: web
     ports:
       - "8080:80"
     restart: always
