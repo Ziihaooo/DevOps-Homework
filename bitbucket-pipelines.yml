@@ -14,7 +14,7 @@ pipelines:
           script:
           #install make in pipelines
             - apk add --no-cache make
-            - export DOCKER_BUILDERKIT = 0
+            - export DOCKER_BUILDKIT=0
             - make build
             - make run
             - make stop
