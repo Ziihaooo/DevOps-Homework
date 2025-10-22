@@ -13,7 +13,7 @@ pipelines:
             - docker
           script:
           #install make in pipelines
-            - apk add --no-cache make
+            - apk add --no-cache make curl
             - export DOCKER_BUILDKIT=0
             - make build
             - make run
