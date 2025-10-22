@@ -8,6 +8,9 @@ pipelines:
     #step for making the nginx server up
       - step:
           name: Build and Deploy
+            #let pipeline run docker command
+          services:
+            - docker
           script:
           #install make in pipelines
             - apk add --no-cache make
