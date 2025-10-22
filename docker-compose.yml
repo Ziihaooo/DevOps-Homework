@@ -1,0 +1,9 @@
+version: "3.8"
+services:
+  static-html:
+    #build image based on the Dockerfile in my current directory
+    build: .
+    container-name: web
+    ports:
+      - "8080:80"
+    restart: always

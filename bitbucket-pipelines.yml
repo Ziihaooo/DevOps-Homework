@@ -1,0 +1,15 @@
+#DOCKER IMAGE TO RUN DOCKER COMMAND
+image: docker:24.0.5
+#ALL PIPELINE COMMAND
+pipelines:
+  #my branch
+  DEVOPSOCT-29:
+    #step for making the nginx server up
+    - step:
+        name: Build and Deploy
+        script:
+          #install make in pipelines
+          - apk add --no-cache make
+          - make build
+          - make run
+          - make stop
