@@ -17,5 +17,6 @@ pipelines:
             - export DOCKER_BUILDKIT=0
             - make build
             - make run
+            - sleep 10
             - curl -i http://localhost:8080 
             - make stop
