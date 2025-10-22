@@ -1,6 +1,6 @@
 version: "3.8"
 services:
-  static-html:
+  static_html:
     #build image based on the Dockerfile in my current directory
     build: .
     container-name: web
