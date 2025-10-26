@@ -15,4 +15,4 @@ pipelines:
             - curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin
             - export DOCKER_BUILDKIT=0
             - docker build -t class .
-            - ./trivy image --severity HIGH,CRITICAL class
+            - trivy image --severity HIGH,CRITICAL class
