@@ -5,9 +5,7 @@ version: '3.8'
 services:
   #database service
   db:
-    build:
-      context: .
-      dockerfile: DockerfileA
+    image: mysql:8.0
     container_name: mysql_db
     #if this container stop, start again automatically
     restart: always
@@ -15,6 +13,7 @@ services:
     #when we push to different branches
     #MYSQL container need to know 
     environment:
+    
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD} #mandatory
       MYSQL_DATABASE: ${MYSQL_DATABASE} #recommended
       MYSQL_USER: ${MYSQL_USER} #recommended

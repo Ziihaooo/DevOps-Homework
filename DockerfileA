@@ -1,8 +1,0 @@
-# Start from official MySQL 8.0 image
-FROM mysql:8.0
-
-# Copy your initialization SQL script into the auto-run folder
-COPY mysql/init.sql /docker-entrypoint-initdb.d/init.sql
-
-# Expose MySQL default port
-EXPOSE 3306
