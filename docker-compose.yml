@@ -15,7 +15,7 @@ services:
     #when we push to different branches
     #MYSQL container need to know 
     environment:
-    
+      MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD} #mandatory
       MYSQL_DATABASE: ${MYSQL_DATABASE} #recommended
       MYSQL_USER: ${MYSQL_USER} #recommended
@@ -27,7 +27,7 @@ services:
     volumes:
     #use the data stored before 
     #disable in CI
-      - ${MYSQL_VOLUME:-db_data}:/var/lib/mysql 
+      - ${ENABLE_VOLUME:-db_data}:/var/lib/mysql
     #useful when other services need to depend on this 
     #run after mysql start running, and mark service healthy or not healthy
     #healthcheck for docker orchestration level
@@ -54,6 +54,7 @@ services:
         condition: service_healthy
     #need this to connect to db
     environment:
+      MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
       DB_HOST: db
       DB_USER: ${MYSQL_USER}
       DB_PASSWORD: ${MYSQL_PASSWORD}

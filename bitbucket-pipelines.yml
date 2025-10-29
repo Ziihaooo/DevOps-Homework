@@ -15,7 +15,7 @@ pipelines:
           script:
             - apk add --no-cache make 
             - export DOCKER_BUILDKIT=0
-            - export MYSQL_VOLUME=""
+            - export ENABLE_VOLUME=""
             - make build
             - make start
             - make db-wait
@@ -32,6 +32,7 @@ pipelines:
           script:
             - apk add --no-cache docker-compose make 
             - export DOCKER_BUILDKIT=0
+            - export ENABLE_VOLUME=""
             - make build
             - make start
             - make db-wait
@@ -49,6 +50,7 @@ pipelines:
           script:
             - apk add --no-cache docker-compose make 
             - export DOCKER_BUILDKIT=0
+            - export ENABLE_VOLUME=""
             - make build
             - make start
             - make db-wait
@@ -66,6 +68,7 @@ pipelines:
           script:
             - apk add --no-cachedocker-compose make 
             - export DOCKER_BUILDKIT=0
+            - export ENABLE_VOLUME=""
             - make build
             - make start
             - make db-wait

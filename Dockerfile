@@ -24,6 +24,10 @@ RUN npm cache clean --force
 
 #COPY the rest of js file
 COPY src/ .
+
+# COPY wait-for.sh script to the container
+COPY wait-for.sh .
+
 #expose port for api
 EXPOSE 3000
 
