@@ -1,0 +1,22 @@
+pipelines:
+  branches:
+  #branches for different environment
+    dev:
+      - step:
+          name: Run Tests and deploy to Dev
+          deployment: Development
+        
+    qa:
+      - step:
+          name: Run Tests and deploy to qa
+          deployment: Quality Assurance
+
+    staging:
+      - step:
+          name: Run Tests and deploy to staging
+          deployment: Staging
+    
+    Production:
+      - step:
+          name: Run Tests and deploy to Production
+          deployment: Production

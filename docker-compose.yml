@@ -1,0 +1,37 @@
+#a fix version
+version: '3.8'
+
+#define services here
+services:
+  #database service
+  db:
+    image: mysql:8.0
+    container_name: mysql_db
+    #if this container stop, start again automatically
+    restart: always
+    #would use the environment we store in the bitbucket
+    #when we push to different branches
+    #MYSQL container need to know 
+    environment:
+    #variable that change between environment should not be hardcorded
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD} #mandatory
+      MYSQL_DATABASE: app_db #recommended
+      MYSQL_USER: app_user #recommended
+      MYSQL_PASSWORD: $(MYSQL_PASSWORD) #recommended
+    #default db ports
+    ports:
+      - "3306:3306"
+    #the required docker volumne mount strategy
+    volumes:
+    #mount my init.sql in mysql to the docker file which will execute by the image automatically
+      - ./mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
+    #useful when other services need to depend on this 
+    #run after mysql start running, and mark service healthy or not healthy
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      #run test every 5s
+      interval: 5s
+      #wait for test finish
+      timeout: 3s
+      #healthy if successful within 5s
+      retries: 5
