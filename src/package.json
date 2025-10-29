@@ -15,11 +15,12 @@
 "supertest": "^6.3.3"
 },
 "jest": {
-  "rootDir": "../", 
+  "rootDir": ".",
   "testMatch": ["<rootDir>/tests/**/*.test.js"],
   "moduleDirectories": [
     "node_modules",
     "src/node_modules"
   ]
 }
+
 }

@@ -59,7 +59,7 @@ services:
       DB_PASSWORD: ${MYSQL_PASSWORD}
       DB_NAME: ${MYSQL_DATABASE}
     #overwrite cmd in docker file
-    command: ["sh", "-c", "./wait-for.sh db && node app.js"]
+    command: ["sh", "-c", "wait-for.sh mysql_db:3306 -- npm start && tail -f /dev/null"]
 
 #persistent data storage
 #\\wsl$\docker-desktop-data\data\docker\volumes\db_data\_data\

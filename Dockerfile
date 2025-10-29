@@ -19,17 +19,17 @@ COPY src/package*.json ./
 #this only work if there is a lock.json 
 #so we must run npm install for packagejson to create lock.json on local first
 RUN npm ci
-#clean cache
-RUN npm cache clean --force
 
 #COPY the rest of js file
-COPY src/ .
 
-# COPY wait-for.sh script to the container
-COPY wait-for.sh .
+COPY src/ ./src/
+COPY tests/ ./tests/
+RUN rm ./src/package.json
+COPY wait-for.sh /usr/local/bin/wait-for.sh
+RUN chmod +x /usr/local/bin/wait-for.sh
 
 #expose port for api
 EXPOSE 3000
 
 #start the app
-CMD ["node","app.js"]
+CMD ["sh", "-c", "wait-for.sh mysql_db:3306 -- npm start"]
