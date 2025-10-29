@@ -5,6 +5,7 @@
 #safest version
 FROM node:20-alpine
 
+COPY init.sql /docker-entrypoint-initdb.d/init.sql
 # Update system packages to reduce vulnerabilities
 RUN apk update && apk upgrade
 

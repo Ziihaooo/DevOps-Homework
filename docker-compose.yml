@@ -5,7 +5,9 @@ version: '3.8'
 services:
   #database service
   db:
-    image: mysql:8.0
+    build:
+      context: .
+      dockerfile: DockerfileA
     container_name: mysql_db
     #if this container stop, start again automatically
     restart: always
