@@ -1,7 +1,7 @@
 #ENV define for easier use
 DC := docker compose
 
-.PHONY: build run up db:wait test down clean reset
+.PHONY: build run up db-wait test down clean reset
 
 build:
 	$(DC) build
@@ -12,7 +12,7 @@ run:
 up:
 	$(DC) up -d --build
 #@ for printing echo
-db:wait:
+db-wait:
 #this command check is the database container ready and responds
 #-T stands for no TTY to prevent errors
 #name must align with dockerfile

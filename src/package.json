@@ -13,5 +13,13 @@
 "devDependencies": {
 "jest": "^29.6.0",
 "supertest": "^6.3.3"
+},
+"jest": {
+  "rootDir": "../", 
+  "testMatch": ["<rootDir>/tests/**/*.test.js"],
+  "moduleDirectories": [
+    "node_modules",
+    "src/node_modules"
+  ]
 }
 }

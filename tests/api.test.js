@@ -1,3 +1,6 @@
+process.env.NODE_PATH = __dirname + '/../src/node_modules';
+require('module').Module._initPaths();
+
 const request = require('supertest');
 const app = require('../src/app');
 

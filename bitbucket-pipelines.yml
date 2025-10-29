@@ -17,7 +17,7 @@ pipelines:
             - export DOCKER_BUILDKIT=0
             - make build
             - make run
-            - make db:wait
+            - make db-wait
             - make test
             - make down
 
@@ -33,7 +33,7 @@ pipelines:
             - export DOCKER_BUILDKIT=0
             - make build
             - make run
-            - make db:wait
+            - make db-wait
             - make test
             - make down
 
@@ -50,7 +50,7 @@ pipelines:
             - export DOCKER_BUILDKIT=0
             - make build
             - make run
-            - make db:wait
+            - make db-wait
             - make test
             - make down
 
@@ -67,6 +67,6 @@ pipelines:
             - export DOCKER_BUILDKIT=0
             - make build
             - make run
-            - make db:wait
+            - make db-wait
             - make test
             - make down
