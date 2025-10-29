@@ -24,10 +24,10 @@ services:
     ports:
       - "3306:3306"
     #the required docker volumne mount strategy
-    volumes:
+    #volumes:
     #use the data stored before 
     #disable in CI
-      - ${ENABLE_VOLUME:-db_data}:/var/lib/mysql
+      # - ${ENABLE_VOLUME:-db_data}:/var/lib/mysql
     #useful when other services need to depend on this 
     #run after mysql start running, and mark service healthy or not healthy
     #healthcheck for docker orchestration level
