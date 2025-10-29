@@ -1,11 +1,12 @@
 #ENV define for easier use
 D := docker
-DC := docker compose
 
 ifeq ($(CI),true)
 	ENV :=
+	DC := docker compose -f docker-compose.ci.yml
 else
 	ENV := --env-file .env.tests
+	DC := docker compose
 endif
 
 .PHONY: build run up db-wait test down clean reset
