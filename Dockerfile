@@ -32,4 +32,4 @@ RUN chmod +x /usr/local/bin/wait-for.sh
 EXPOSE 3000
 
 #start the app
-CMD ["sh", "-c", "wait-for.sh mysql_db:3306"]
+CMD ["sh", "-c", "wait-for.sh mysql_db:3306 -- npm start"]
