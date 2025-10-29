@@ -17,12 +17,14 @@ services:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD} #mandatory
       MYSQL_DATABASE: app_db #recommended
       MYSQL_USER: app_user #recommended
-      MYSQL_PASSWORD: $(MYSQL_PASSWORD) #recommended
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD} #recommended
     #default db ports
     ports:
       - "3306:3306"
     #the required docker volumne mount strategy
     volumes:
+    #use the data stored before 
+      - db_data:/var/lib/mysql
     #mount my init.sql in mysql to the docker file which will execute by the image automatically
       - ./mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
     #useful when other services need to depend on this 
@@ -35,3 +37,27 @@ services:
       timeout: 3s
       #healthy if successful within 5s
       retries: 5
+
+  api:
+    #need to build based on the image
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: node_api
+    ports:
+      - "3000:3000"
+    #it needs mysql to be healthy to run successfully
+    depends_on:
+      db:
+        condition: service_healthy
+    #need this to connect to db
+    environment:
+      DB_HOST: db
+      DB_USER: app_user
+      DB_PASSWORD: ${MYSQL_PASSWORD}
+      DB_NAME: app_db
+
+#persistent data storage
+#\\wsl$\docker-desktop-data\data\docker\volumes\db_data\_data\
+volumes:
+  db_data:
