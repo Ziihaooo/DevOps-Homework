@@ -13,10 +13,9 @@ services:
     #when we push to different branches
     #MYSQL container need to know 
     environment:
-    #variable that change between environment should not be hardcorded
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD} #mandatory
-      MYSQL_DATABASE: app_db #recommended
-      MYSQL_USER: app_user #recommended
+      MYSQL_DATABASE: ${MYSQL_DATABASE} #recommended
+      MYSQL_USER: ${MYSQL_USER} #recommended
       MYSQL_PASSWORD: ${MYSQL_PASSWORD} #recommended
     #default db ports
     ports:
@@ -29,6 +28,7 @@ services:
       - ./mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
     #useful when other services need to depend on this 
     #run after mysql start running, and mark service healthy or not healthy
+    #healthcheck for docker orchestration level
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       #run test every 5s
@@ -53,9 +53,11 @@ services:
     #need this to connect to db
     environment:
       DB_HOST: db
-      DB_USER: app_user
+      DB_USER: ${MYSQL_USER}
       DB_PASSWORD: ${MYSQL_PASSWORD}
-      DB_NAME: app_db
+      DB_NAME: ${MYSQL_DATABASE}
+    #overwrite cmd in docker file
+    command: ["sh", "-c", "./wait-for.sh db && node app.js"]
 
 #persistent data storage
 #\\wsl$\docker-desktop-data\data\docker\volumes\db_data\_data\

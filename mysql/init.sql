@@ -1,5 +1,5 @@
-CREATE DATABASE IF NOT EXISTS stagingdb;
-USE stagingdb;
+CREATE DATABASE IF NOT EXISTS app_db_test;
+USE app_db_test;
 
 
 CREATE TABLE users (

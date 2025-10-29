@@ -1,22 +1,72 @@
+image: docker:24
+
+options:
+  docker: true
+
 pipelines:
   branches:
-  #branches for different environment
+    # Development branch
     dev:
       - step:
-          name: Run Tests and deploy to Dev
+          name: CI for Dev 
           deployment: Development
-        
+          services:
+            - docker
+          script:
+            - apk add --no-cache make 
+            - export DOCKER_BUILDKIT=0
+            - make build
+            - make run
+            - make db:wait
+            - make test
+            - make down
+
+    # Main branch (Production)
+    main:
+      - step:
+          name: CI for Main 
+          deployment: Production
+          services:
+            - docker
+          script:
+            - apk add --no-cache make 
+            - export DOCKER_BUILDKIT=0
+            - make build
+            - make run
+            - make db:wait
+            - make test
+            - make down
+
+    # QA branch (manual trigger)
     qa:
       - step:
-          name: Run Tests and deploy to qa
+          name: Run tests and deploy to QA
           deployment: Quality Assurance
+          trigger: manual
+          services:
+            - docker
+          script:
+            - apk add --no-cache make 
+            - export DOCKER_BUILDKIT=0
+            - make build
+            - make run
+            - make db:wait
+            - make test
+            - make down
 
+    # Staging branch (manual trigger)
     staging:
       - step:
-          name: Run Tests and deploy to staging
+          name: Run tests and deploy to Staging
           deployment: Staging
-    
-    Production:
-      - step:
-          name: Run Tests and deploy to Production
-          deployment: Production
+          trigger: manual
+          services:
+            - docker
+          script:
+            - apk add --no-cache make 
+            - export DOCKER_BUILDKIT=0
+            - make build
+            - make run
+            - make db:wait
+            - make test
+            - make down
