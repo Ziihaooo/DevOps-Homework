@@ -26,7 +26,7 @@ services:
     #the required docker volumne mount strategy
     volumes:
     #use the data stored before 
-      - db_data:/var/lib/mysql    
+      - ${MYSQL_VOLUME:-db_data}:/var/lib/mysql 
     #useful when other services need to depend on this 
     #run after mysql start running, and mark service healthy or not healthy
     #healthcheck for docker orchestration level
