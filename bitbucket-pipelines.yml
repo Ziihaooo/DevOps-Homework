@@ -15,7 +15,7 @@ pipelines:
           script:
             - apk add --no-cache make 
             - export DOCKER_BUILDKIT=0
-            - export CI_PIPELINE=true
+            - export MYSQL_VOLUME=""
             - make build
             - make start
             - make db-wait
