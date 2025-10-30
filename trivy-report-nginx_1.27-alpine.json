@@ -1,0 +1,659 @@
+{
+  "SchemaVersion": 2,
+  "CreatedAt": "2025-10-30T17:59:05.90135946+08:00",
+  "ArtifactName": "nginx:1.27-alpine",
+  "ArtifactType": "container_image",
+  "Metadata": {
+    "OS": {
+      "Family": "alpine",
+      "Name": "3.21.3"
+    },
+    "ImageID": "sha256:6769dc3a703c719c1d2756bda113659be28ae16cf0da58dd5fd823d6b9a050ea",
+    "DiffIDs": [
+      "sha256:08000c18d16dadf9553d747a58cf44023423a9ab010aab96cf263d2216b8b350",
+      "sha256:d71eae0084c1aa823dd8fb2ecf8604d5c0f4911226c042bb1f8297e819f4b192",
+      "sha256:c56f134d380585340a68d0db2f2c170641a1c0ff72ccf2438cf2f693df756a85",
+      "sha256:e244aa659f612a80c40dd8645812301e3def6b15ec67b9e486ed2201172b51d1",
+      "sha256:b8d7d1d2263425d6044e059b2810017d062d659b9b755241f3747eda77726250",
+      "sha256:811a4dbbf4a5309e4390cf655c12db92e1a4304fb9d9731f83e7b02e95a617c6",
+      "sha256:947e805a4ac71f68e6703550c0b36c2aa2e554c4fa670ca2da6a25c6d7dccb66",
+      "sha256:0d853d50b128aa460b47e7121849463a14b18d4fd976caf5014744aae24d28aa"
+    ],
+    "RepoTags": [
+      "nginx:1.27-alpine"
+    ],
+    "RepoDigests": [
+      "nginx@sha256:65645c7bb6a0661892a8b03b89d0743208a18dd2f3f17a54ef4b76fb8e2f2a10"
+    ],
+    "ImageConfig": {
+      "architecture": "amd64",
+      "created": "2025-04-16T14:50:31Z",
+      "history": [
+        {
+          "created": "2025-02-14T03:28:36Z",
+          "created_by": "ADD alpine-minirootfs-3.21.3-x86_64.tar.gz / # buildkit",
+          "comment": "buildkit.dockerfile.v0"
+        },
+        {
+          "created": "2025-02-14T03:28:36Z",
+          "created_by": "CMD [\"/bin/sh\"]",
+          "comment": "buildkit.dockerfile.v0",
+          "empty_layer": true
+        },
+        {
+          "created": "2025-04-16T14:50:31Z",
+          "created_by": "LABEL maintainer=NGINX Docker Maintainers \u003cdocker-maint@nginx.com\u003e",
+          "comment": "buildkit.dockerfile.v0",
+          "empty_layer": true
+        },
+        {
+          "created": "2025-04-16T14:50:31Z",
+          "created_by": "ENV NGINX_VERSION=1.27.5",
+          "comment": "buildkit.dockerfile.v0",
+          "empty_layer": true
+        },
+        {
+          "created": "2025-04-16T14:50:31Z",
+          "created_by": "ENV PKG_RELEASE=1",
+          "comment": "buildkit.dockerfile.v0",
+          "empty_layer": true
+        },
+        {
+          "created": "2025-04-16T14:50:31Z",
+          "created_by": "ENV DYNPKG_RELEASE=1",
+          "comment": "buildkit.dockerfile.v0",
+          "empty_layer": true
+        },
+        {
+          "created": "2025-04-16T14:50:31Z",
+          "created_by": "RUN /bin/sh -c set -x     \u0026\u0026 addgroup -g 101 -S nginx     \u0026\u0026 adduser -S -D -H -u 101 -h /var/cache/nginx -s /sbin/nologin -G nginx -g nginx nginx     \u0026\u0026 apkArch=\"$(cat /etc/apk/arch)\"     \u0026\u0026 nginxPackages=\"         nginx=${NGINX_VERSION}-r${PKG_RELEASE}     \"     \u0026\u0026 apk add --no-cache --virtual .checksum-deps         openssl     \u0026\u0026 case \"$apkArch\" in         x86_64|aarch64)             set -x             \u0026\u0026 KEY_SHA512=\"e09fa32f0a0eab2b879ccbbc4d0e4fb9751486eedda75e35fac65802cc9faa266425edf83e261137a2f4d16281ce2c1a5f4502930fe75154723da014214f0655\"             \u0026\u0026 wget -O /tmp/nginx_signing.rsa.pub https://nginx.org/keys/nginx_signing.rsa.pub             \u0026\u0026 if echo \"$KEY_SHA512 */tmp/nginx_signing.rsa.pub\" | sha512sum -c -; then                 echo \"key verification succeeded!\";                 mv /tmp/nginx_signing.rsa.pub /etc/apk/keys/;             else                 echo \"key verification failed!\";                 exit 1;             fi             \u0026\u0026 apk add -X \"https://nginx.org/packages/mainline/alpine/v$(egrep -o '^[0-9]+\\.[0-9]+' /etc/alpine-release)/main\" --no-cache $nginxPackages             ;;         *)             set -x             \u0026\u0026 tempDir=\"$(mktemp -d)\"             \u0026\u0026 chown nobody:nobody $tempDir             \u0026\u0026 apk add --no-cache --virtual .build-deps                 gcc                 libc-dev                 make                 openssl-dev                 pcre2-dev                 zlib-dev                 linux-headers                 bash                 alpine-sdk                 findutils                 curl             \u0026\u0026 su nobody -s /bin/sh -c \"                 export HOME=${tempDir}                 \u0026\u0026 cd ${tempDir}                 \u0026\u0026 curl -f -L -O https://github.com/nginx/pkg-oss/archive/${NGINX_VERSION}-${PKG_RELEASE}.tar.gz                 \u0026\u0026 PKGOSSCHECKSUM=\\\"c773d98b567bd585c17f55702bf3e4c7d82b676bfbde395270e90a704dca3c758dfe0380b3f01770542b4fd9bed1f1149af4ce28bfc54a27a96df6b700ac1745 *${NGINX_VERSION}-${PKG_RELEASE}.tar.gz\\\"                 \u0026\u0026 if [ \\\"\\$(openssl sha512 -r ${NGINX_VERSION}-${PKG_RELEASE}.tar.gz)\\\" = \\\"\\$PKGOSSCHECKSUM\\\" ]; then                     echo \\\"pkg-oss tarball checksum verification succeeded!\\\";                 else                     echo \\\"pkg-oss tarball checksum verification failed!\\\";                     exit 1;                 fi                 \u0026\u0026 tar xzvf ${NGINX_VERSION}-${PKG_RELEASE}.tar.gz                 \u0026\u0026 cd pkg-oss-${NGINX_VERSION}-${PKG_RELEASE}                 \u0026\u0026 cd alpine                 \u0026\u0026 make base                 \u0026\u0026 apk index --allow-untrusted -o ${tempDir}/packages/alpine/${apkArch}/APKINDEX.tar.gz ${tempDir}/packages/alpine/${apkArch}/*.apk                 \u0026\u0026 abuild-sign -k ${tempDir}/.abuild/abuild-key.rsa ${tempDir}/packages/alpine/${apkArch}/APKINDEX.tar.gz                 \"             \u0026\u0026 cp ${tempDir}/.abuild/abuild-key.rsa.pub /etc/apk/keys/             \u0026\u0026 apk del --no-network .build-deps             \u0026\u0026 apk add -X ${tempDir}/packages/alpine/ --no-cache $nginxPackages             ;;     esac     \u0026\u0026 apk del --no-network .checksum-deps     \u0026\u0026 if [ -n \"$tempDir\" ]; then rm -rf \"$tempDir\"; fi     \u0026\u0026 if [ -f \"/etc/apk/keys/abuild-key.rsa.pub\" ]; then rm -f /etc/apk/keys/abuild-key.rsa.pub; fi     \u0026\u0026 apk add --no-cache gettext-envsubst     \u0026\u0026 apk add --no-cache tzdata     \u0026\u0026 ln -sf /dev/stdout /var/log/nginx/access.log     \u0026\u0026 ln -sf /dev/stderr /var/log/nginx/error.log     \u0026\u0026 mkdir /docker-entrypoint.d # buildkit",
+          "comment": "buildkit.dockerfile.v0"
+        },
+        {
+          "created": "2025-04-16T14:50:31Z",
+          "created_by": "COPY docker-entrypoint.sh / # buildkit",
+          "comment": "buildkit.dockerfile.v0"
+        },
+        {
+          "created": "2025-04-16T14:50:31Z",
+          "created_by": "COPY 10-listen-on-ipv6-by-default.sh /docker-entrypoint.d # buildkit",
+          "comment": "buildkit.dockerfile.v0"
+        },
+        {
+          "created": "2025-04-16T14:50:31Z",
+          "created_by": "COPY 15-local-resolvers.envsh /docker-entrypoint.d # buildkit",
+          "comment": "buildkit.dockerfile.v0"
+        },
+        {
+          "created": "2025-04-16T14:50:31Z",
+          "created_by": "COPY 20-envsubst-on-templates.sh /docker-entrypoint.d # buildkit",
+          "comment": "buildkit.dockerfile.v0"
+        },
+        {
+          "created": "2025-04-16T14:50:31Z",
+          "created_by": "COPY 30-tune-worker-processes.sh /docker-entrypoint.d # buildkit",
+          "comment": "buildkit.dockerfile.v0"
+        },
+        {
+          "created": "2025-04-16T14:50:31Z",
+          "created_by": "ENTRYPOINT [\"/docker-entrypoint.sh\"]",
+          "comment": "buildkit.dockerfile.v0",
+          "empty_layer": true
+        },
+        {
+          "created": "2025-04-16T14:50:31Z",
+          "created_by": "EXPOSE map[80/tcp:{}]",
+          "comment": "buildkit.dockerfile.v0",
+          "empty_layer": true
+        },
+        {
+          "created": "2025-04-16T14:50:31Z",
+          "created_by": "STOPSIGNAL SIGQUIT",
+          "comment": "buildkit.dockerfile.v0",
+          "empty_layer": true
+        },
+        {
+          "created": "2025-04-16T14:50:31Z",
+          "created_by": "CMD [\"nginx\" \"-g\" \"daemon off;\"]",
+          "comment": "buildkit.dockerfile.v0",
+          "empty_layer": true
+        },
+        {
+          "created": "2025-04-16T14:50:31Z",
+          "created_by": "ENV NJS_VERSION=0.8.10",
+          "comment": "buildkit.dockerfile.v0",
+          "empty_layer": true
+        },
+        {
+          "created": "2025-04-16T14:50:31Z",
+          "created_by": "ENV NJS_RELEASE=1",
+          "comment": "buildkit.dockerfile.v0",
+          "empty_layer": true
+        },
+        {
+          "created": "2025-04-16T14:50:31Z",
+          "created_by": "RUN /bin/sh -c set -x     \u0026\u0026 apkArch=\"$(cat /etc/apk/arch)\"     \u0026\u0026 nginxPackages=\"         nginx=${NGINX_VERSION}-r${PKG_RELEASE}         nginx-module-xslt=${NGINX_VERSION}-r${DYNPKG_RELEASE}         nginx-module-geoip=${NGINX_VERSION}-r${DYNPKG_RELEASE}         nginx-module-image-filter=${NGINX_VERSION}-r${DYNPKG_RELEASE}         nginx-module-njs=${NGINX_VERSION}.${NJS_VERSION}-r${NJS_RELEASE}     \"     \u0026\u0026 apk add --no-cache --virtual .checksum-deps         openssl     \u0026\u0026 case \"$apkArch\" in         x86_64|aarch64)             apk add -X \"https://nginx.org/packages/mainline/alpine/v$(egrep -o '^[0-9]+\\.[0-9]+' /etc/alpine-release)/main\" --no-cache $nginxPackages             ;;         *)             set -x             \u0026\u0026 tempDir=\"$(mktemp -d)\"             \u0026\u0026 chown nobody:nobody $tempDir             \u0026\u0026 apk add --no-cache --virtual .build-deps                 gcc                 libc-dev                 make                 openssl-dev                 pcre2-dev                 zlib-dev                 linux-headers                 libxslt-dev                 gd-dev                 geoip-dev                 libedit-dev                 bash                 alpine-sdk                 findutils                 curl             \u0026\u0026 su nobody -s /bin/sh -c \"                 export HOME=${tempDir}                 \u0026\u0026 cd ${tempDir}                 \u0026\u0026 curl -f -L -O https://github.com/nginx/pkg-oss/archive/${NGINX_VERSION}-${PKG_RELEASE}.tar.gz                 \u0026\u0026 PKGOSSCHECKSUM=\\\"c773d98b567bd585c17f55702bf3e4c7d82b676bfbde395270e90a704dca3c758dfe0380b3f01770542b4fd9bed1f1149af4ce28bfc54a27a96df6b700ac1745 *${NGINX_VERSION}-${PKG_RELEASE}.tar.gz\\\"                 \u0026\u0026 if [ \\\"\\$(openssl sha512 -r ${NGINX_VERSION}-${PKG_RELEASE}.tar.gz)\\\" = \\\"\\$PKGOSSCHECKSUM\\\" ]; then                     echo \\\"pkg-oss tarball checksum verification succeeded!\\\";                 else                     echo \\\"pkg-oss tarball checksum verification failed!\\\";                     exit 1;                 fi                 \u0026\u0026 tar xzvf ${NGINX_VERSION}-${PKG_RELEASE}.tar.gz                 \u0026\u0026 cd pkg-oss-${NGINX_VERSION}-${PKG_RELEASE}                 \u0026\u0026 cd alpine                 \u0026\u0026 make module-geoip module-image-filter module-njs module-xslt                 \u0026\u0026 apk index --allow-untrusted -o ${tempDir}/packages/alpine/${apkArch}/APKINDEX.tar.gz ${tempDir}/packages/alpine/${apkArch}/*.apk                 \u0026\u0026 abuild-sign -k ${tempDir}/.abuild/abuild-key.rsa ${tempDir}/packages/alpine/${apkArch}/APKINDEX.tar.gz                 \"             \u0026\u0026 cp ${tempDir}/.abuild/abuild-key.rsa.pub /etc/apk/keys/             \u0026\u0026 apk del --no-network .build-deps             \u0026\u0026 apk add -X ${tempDir}/packages/alpine/ --no-cache $nginxPackages             ;;     esac     \u0026\u0026 apk del --no-network .checksum-deps     \u0026\u0026 if [ -n \"$tempDir\" ]; then rm -rf \"$tempDir\"; fi     \u0026\u0026 if [ -f \"/etc/apk/keys/abuild-key.rsa.pub\" ]; then rm -f /etc/apk/keys/abuild-key.rsa.pub; fi     \u0026\u0026 apk add --no-cache curl ca-certificates # buildkit",
+          "comment": "buildkit.dockerfile.v0"
+        }
+      ],
+      "os": "linux",
+      "rootfs": {
+        "type": "layers",
+        "diff_ids": [
+          "sha256:08000c18d16dadf9553d747a58cf44023423a9ab010aab96cf263d2216b8b350",
+          "sha256:d71eae0084c1aa823dd8fb2ecf8604d5c0f4911226c042bb1f8297e819f4b192",
+          "sha256:c56f134d380585340a68d0db2f2c170641a1c0ff72ccf2438cf2f693df756a85",
+          "sha256:e244aa659f612a80c40dd8645812301e3def6b15ec67b9e486ed2201172b51d1",
+          "sha256:b8d7d1d2263425d6044e059b2810017d062d659b9b755241f3747eda77726250",
+          "sha256:811a4dbbf4a5309e4390cf655c12db92e1a4304fb9d9731f83e7b02e95a617c6",
+          "sha256:947e805a4ac71f68e6703550c0b36c2aa2e554c4fa670ca2da6a25c6d7dccb66",
+          "sha256:0d853d50b128aa460b47e7121849463a14b18d4fd976caf5014744aae24d28aa"
+        ]
+      },
+      "config": {
+        "Cmd": [
+          "nginx",
+          "-g",
+          "daemon off;"
+        ],
+        "Entrypoint": [
+          "/docker-entrypoint.sh"
+        ],
+        "Env": [
+          "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+          "NGINX_VERSION=1.27.5",
+          "PKG_RELEASE=1",
+          "DYNPKG_RELEASE=1",
+          "NJS_VERSION=0.8.10",
+          "NJS_RELEASE=1"
+        ],
+        "Labels": {
+          "maintainer": "NGINX Docker Maintainers \u003cdocker-maint@nginx.com\u003e"
+        },
+        "WorkingDir": "/",
+        "StopSignal": "SIGQUIT"
+      }
+    }
+  },
+  "Results": [
+    {
+      "Target": "nginx:1.27-alpine (alpine 3.21.3)",
+      "Class": "os-pkgs",
+      "Type": "alpine",
+      "Vulnerabilities": [
+        {
+          "VulnerabilityID": "CVE-2025-49794",
+          "PkgID": "libxml2@2.13.4-r5",
+          "PkgName": "libxml2",
+          "PkgIdentifier": {
+            "PURL": "pkg:apk/alpine/libxml2@2.13.4-r5?arch=x86_64\u0026distro=3.21.3",
+            "UID": "4520151b542a887b"
+          },
+          "InstalledVersion": "2.13.4-r5",
+          "FixedVersion": "2.13.9-r0",
+          "Status": "fixed",
+          "Layer": {
+            "DiffID": "sha256:0d853d50b128aa460b47e7121849463a14b18d4fd976caf5014744aae24d28aa"
+          },
+          "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2025-49794",
+          "DataSource": {
+            "ID": "alpine",
+            "Name": "Alpine Secdb",
+            "URL": "https://secdb.alpinelinux.org/"
+          },
+          "Title": "libxml: Heap use after free (UAF) leads to Denial of service (DoS)",
+          "Description": "A use-after-free vulnerability was found in libxml2. This issue occurs when parsing XPath elements under certain circumstances when the XML schematron has the \u003csch:name path=\"...\"/\u003e schema elements. This flaw allows a malicious actor to craft a malicious XML document used as input for libxml, resulting in the program's crash using libxml or other possible undefined behaviors.",
+          "Severity": "CRITICAL",
+          "CweIDs": [
+            "CWE-825"
+          ],
+          "VendorSeverity": {
+            "alma": 3,
+            "amazon": 3,
+            "azure": 4,
+            "cbl-mariner": 4,
+            "oracle-oval": 3,
+            "photon": 4,
+            "redhat": 3,
+            "rocky": 3,
+            "ubuntu": 2
+          },
+          "CVSS": {
+            "redhat": {
+              "V3Vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:H/A:H",
+              "V3Score": 9.1
+            }
+          },
+          "References": [
+            "https://access.redhat.com/errata/RHSA-2025:10630",
+            "https://access.redhat.com/errata/RHSA-2025:10698",
+            "https://access.redhat.com/errata/RHSA-2025:10699",
+            "https://access.redhat.com/errata/RHSA-2025:11580",
+            "https://access.redhat.com/errata/RHSA-2025:12098",
+            "https://access.redhat.com/errata/RHSA-2025:12099",
+            "https://access.redhat.com/errata/RHSA-2025:12199",
+            "https://access.redhat.com/errata/RHSA-2025:12237",
+            "https://access.redhat.com/errata/RHSA-2025:12239",
+            "https://access.redhat.com/errata/RHSA-2025:12240",
+            "https://access.redhat.com/errata/RHSA-2025:12241",
+            "https://access.redhat.com/errata/RHSA-2025:13335",
+            "https://access.redhat.com/errata/RHSA-2025:15397",
+            "https://access.redhat.com/errata/RHSA-2025:15827",
+            "https://access.redhat.com/errata/RHSA-2025:15828",
+            "https://access.redhat.com/errata/RHSA-2025:18217",
+            "https://access.redhat.com/errata/RHSA-2025:18218",
+            "https://access.redhat.com/errata/RHSA-2025:18219",
+            "https://access.redhat.com/errata/RHSA-2025:18240",
+            "https://access.redhat.com/errata/RHSA-2025:19020",
+            "https://access.redhat.com/errata/RHSA-2025:19046",
+            "https://access.redhat.com/security/cve/CVE-2025-49794",
+            "https://bugzilla.redhat.com/2372373",
+            "https://bugzilla.redhat.com/2372379",
+            "https://bugzilla.redhat.com/2372385",
+            "https://bugzilla.redhat.com/2372406",
+            "https://bugzilla.redhat.com/show_bug.cgi?id=2372373",
+            "https://bugzilla.redhat.com/show_bug.cgi?id=2372385",
+            "https://bugzilla.redhat.com/show_bug.cgi?id=2372406",
+            "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2025-49794",
+            "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2025-49796",
+            "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2025-6021",
+            "https://errata.almalinux.org/10/ALSA-2025-10630.html",
+            "https://errata.rockylinux.org/RLSA-2025:10698",
+            "https://gitlab.gnome.org/GNOME/libxml2/-/issues/931",
+            "https://linux.oracle.com/cve/CVE-2025-49794.html",
+            "https://linux.oracle.com/errata/ELSA-2025-12240.html",
+            "https://nvd.nist.gov/vuln/detail/CVE-2025-49794",
+            "https://ubuntu.com/security/notices/USN-7694-1",
+            "https://www.cve.org/CVERecord?id=CVE-2025-49794"
+          ],
+          "PublishedDate": "2025-06-16T16:15:18.997Z",
+          "LastModifiedDate": "2025-10-29T13:15:35.5Z"
+        },
+        {
+          "VulnerabilityID": "CVE-2025-49796",
+          "PkgID": "libxml2@2.13.4-r5",
+          "PkgName": "libxml2",
+          "PkgIdentifier": {
+            "PURL": "pkg:apk/alpine/libxml2@2.13.4-r5?arch=x86_64\u0026distro=3.21.3",
+            "UID": "4520151b542a887b"
+          },
+          "InstalledVersion": "2.13.4-r5",
+          "FixedVersion": "2.13.9-r0",
+          "Status": "fixed",
+          "Layer": {
+            "DiffID": "sha256:0d853d50b128aa460b47e7121849463a14b18d4fd976caf5014744aae24d28aa"
+          },
+          "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2025-49796",
+          "DataSource": {
+            "ID": "alpine",
+            "Name": "Alpine Secdb",
+            "URL": "https://secdb.alpinelinux.org/"
+          },
+          "Title": "libxml: Type confusion leads to Denial of service (DoS)",
+          "Description": "A vulnerability was found in libxml2. Processing certain sch:name elements from the input XML file can trigger a memory corruption issue. This flaw allows an attacker to craft a malicious XML input file that can lead libxml to crash, resulting in a denial of service or other possible undefined behavior due to sensitive data being corrupted in memory.",
+          "Severity": "CRITICAL",
+          "CweIDs": [
+            "CWE-125"
+          ],
+          "VendorSeverity": {
+            "alma": 3,
+            "amazon": 3,
+            "azure": 4,
+            "cbl-mariner": 4,
+            "oracle-oval": 3,
+            "photon": 4,
+            "redhat": 3,
+            "rocky": 3,
+            "ubuntu": 2
+          },
+          "CVSS": {
+            "redhat": {
+              "V3Vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:H/A:H",
+              "V3Score": 9.1
+            }
+          },
+          "References": [
+            "https://access.redhat.com/errata/RHSA-2025:10630",
+            "https://access.redhat.com/errata/RHSA-2025:10698",
+            "https://access.redhat.com/errata/RHSA-2025:10699",
+            "https://access.redhat.com/errata/RHSA-2025:11580",
+            "https://access.redhat.com/errata/RHSA-2025:12098",
+            "https://access.redhat.com/errata/RHSA-2025:12099",
+            "https://access.redhat.com/errata/RHSA-2025:12199",
+            "https://access.redhat.com/errata/RHSA-2025:12237",
+            "https://access.redhat.com/errata/RHSA-2025:12239",
+            "https://access.redhat.com/errata/RHSA-2025:12240",
+            "https://access.redhat.com/errata/RHSA-2025:12241",
+            "https://access.redhat.com/errata/RHSA-2025:13267",
+            "https://access.redhat.com/errata/RHSA-2025:13335",
+            "https://access.redhat.com/errata/RHSA-2025:15397",
+            "https://access.redhat.com/errata/RHSA-2025:15827",
+            "https://access.redhat.com/errata/RHSA-2025:15828",
+            "https://access.redhat.com/errata/RHSA-2025:18217",
+            "https://access.redhat.com/errata/RHSA-2025:18218",
+            "https://access.redhat.com/errata/RHSA-2025:18219",
+            "https://access.redhat.com/errata/RHSA-2025:18240",
+            "https://access.redhat.com/errata/RHSA-2025:19020",
+            "https://access.redhat.com/errata/RHSA-2025:19046",
+            "https://access.redhat.com/security/cve/CVE-2025-49796",
+            "https://bugzilla.redhat.com/2372373",
+            "https://bugzilla.redhat.com/2372379",
+            "https://bugzilla.redhat.com/2372385",
+            "https://bugzilla.redhat.com/2372406",
+            "https://bugzilla.redhat.com/show_bug.cgi?id=2372373",
+            "https://bugzilla.redhat.com/show_bug.cgi?id=2372385",
+            "https://bugzilla.redhat.com/show_bug.cgi?id=2372406",
+            "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2025-49794",
+            "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2025-49796",
+            "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2025-6021",
+            "https://errata.almalinux.org/10/ALSA-2025-10630.html",
+            "https://errata.rockylinux.org/RLSA-2025:10698",
+            "https://gitlab.gnome.org/GNOME/libxml2/-/issues/933",
+            "https://linux.oracle.com/cve/CVE-2025-49796.html",
+            "https://linux.oracle.com/errata/ELSA-2025-12240.html",
+            "https://nvd.nist.gov/vuln/detail/CVE-2025-49796",
+            "https://ubuntu.com/security/notices/USN-7694-1",
+            "https://www.cve.org/CVERecord?id=CVE-2025-49796"
+          ],
+          "PublishedDate": "2025-06-16T16:15:19.37Z",
+          "LastModifiedDate": "2025-10-29T13:15:35.727Z"
+        },
+        {
+          "VulnerabilityID": "CVE-2025-32414",
+          "PkgID": "libxml2@2.13.4-r5",
+          "PkgName": "libxml2",
+          "PkgIdentifier": {
+            "PURL": "pkg:apk/alpine/libxml2@2.13.4-r5?arch=x86_64\u0026distro=3.21.3",
+            "UID": "4520151b542a887b"
+          },
+          "InstalledVersion": "2.13.4-r5",
+          "FixedVersion": "2.13.4-r6",
+          "Status": "fixed",
+          "Layer": {
+            "DiffID": "sha256:0d853d50b128aa460b47e7121849463a14b18d4fd976caf5014744aae24d28aa"
+          },
+          "SeveritySource": "nvd",
+          "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2025-32414",
+          "DataSource": {
+            "ID": "alpine",
+            "Name": "Alpine Secdb",
+            "URL": "https://secdb.alpinelinux.org/"
+          },
+          "Title": "libxml2: Out-of-Bounds Read in libxml2",
+          "Description": "In libxml2 before 2.13.8 and 2.14.x before 2.14.2, out-of-bounds memory access can occur in the Python API (Python bindings) because of an incorrect return value. This occurs in xmlPythonFileRead and xmlPythonFileReadRaw because of a difference between bytes and characters.",
+          "Severity": "HIGH",
+          "CweIDs": [
+            "CWE-393",
+            "CWE-252"
+          ],
+          "VendorSeverity": {
+            "alma": 2,
+            "amazon": 2,
+            "azure": 2,
+            "cbl-mariner": 2,
+            "nvd": 3,
+            "oracle-oval": 2,
+            "photon": 3,
+            "redhat": 2,
+            "rocky": 2,
+            "ubuntu": 2
+          },
+          "CVSS": {
+            "nvd": {
+              "V3Vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H",
+              "V3Score": 7.5
+            },
+            "redhat": {
+              "V3Vector": "CVSS:3.1/AV:L/AC:H/PR:N/UI:N/S:C/C:L/I:L/A:L",
+              "V3Score": 5.6
+            }
+          },
+          "References": [
+            "https://access.redhat.com/errata/RHSA-2025:13429",
+            "https://access.redhat.com/security/cve/CVE-2025-32414",
+            "https://bugzilla.redhat.com/2358121",
+            "https://bugzilla.redhat.com/2360768",
+            "https://bugzilla.redhat.com/show_bug.cgi?id=2358121",
+            "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2025-32414",
+            "https://errata.almalinux.org/10/ALSA-2025-13429.html",
+            "https://errata.rockylinux.org/RLSA-2025:8958",
+            "https://gitlab.gnome.org/GNOME/libxml2/-/issues/889",
+            "https://linux.oracle.com/cve/CVE-2025-32414.html",
+            "https://linux.oracle.com/errata/ELSA-2025-8958.html",
+            "https://nvd.nist.gov/vuln/detail/CVE-2025-32414",
+            "https://ubuntu.com/security/notices/USN-7467-1",
+            "https://ubuntu.com/security/notices/USN-7467-2",
+            "https://www.cve.org/CVERecord?id=CVE-2025-32414"
+          ],
+          "PublishedDate": "2025-04-08T03:15:15.94Z",
+          "LastModifiedDate": "2025-04-23T19:09:35.517Z"
+        },
+        {
+          "VulnerabilityID": "CVE-2025-32415",
+          "PkgID": "libxml2@2.13.4-r5",
+          "PkgName": "libxml2",
+          "PkgIdentifier": {
+            "PURL": "pkg:apk/alpine/libxml2@2.13.4-r5?arch=x86_64\u0026distro=3.21.3",
+            "UID": "4520151b542a887b"
+          },
+          "InstalledVersion": "2.13.4-r5",
+          "FixedVersion": "2.13.4-r6",
+          "Status": "fixed",
+          "Layer": {
+            "DiffID": "sha256:0d853d50b128aa460b47e7121849463a14b18d4fd976caf5014744aae24d28aa"
+          },
+          "SeveritySource": "nvd",
+          "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2025-32415",
+          "DataSource": {
+            "ID": "alpine",
+            "Name": "Alpine Secdb",
+            "URL": "https://secdb.alpinelinux.org/"
+          },
+          "Title": "libxml2: Out-of-bounds Read in xmlSchemaIDCFillNodeTables",
+          "Description": "In libxml2 before 2.13.8 and 2.14.x before 2.14.2, xmlSchemaIDCFillNodeTables in xmlschemas.c has a heap-based buffer under-read. To exploit this, a crafted XML document must be validated against an XML schema with certain identity constraints, or a crafted XML schema must be used.",
+          "Severity": "HIGH",
+          "CweIDs": [
+            "CWE-1284",
+            "CWE-125"
+          ],
+          "VendorSeverity": {
+            "alma": 2,
+            "amazon": 2,
+            "azure": 1,
+            "cbl-mariner": 1,
+            "nvd": 3,
+            "oracle-oval": 2,
+            "photon": 3,
+            "redhat": 2,
+            "rocky": 2,
+            "ubuntu": 2
+          },
+          "CVSS": {
+            "nvd": {
+              "V3Vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H",
+              "V3Score": 7.5
+            },
+            "redhat": {
+              "V3Vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H",
+              "V3Score": 7.5
+            }
+          },
+          "References": [
+            "https://access.redhat.com/errata/RHSA-2025:13429",
+            "https://access.redhat.com/security/cve/CVE-2025-32415",
+            "https://bugzilla.redhat.com/2358121",
+            "https://bugzilla.redhat.com/2360768",
+            "https://bugzilla.redhat.com/show_bug.cgi?id=2360768",
+            "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2025-32415",
+            "https://errata.almalinux.org/10/ALSA-2025-13429.html",
+            "https://errata.rockylinux.org/RLSA-2025:13203",
+            "https://gitlab.gnome.org/GNOME/libxml2/-/issues/890",
+            "https://linux.oracle.com/cve/CVE-2025-32415.html",
+            "https://linux.oracle.com/errata/ELSA-2025-13789.html",
+            "https://nvd.nist.gov/vuln/detail/CVE-2025-32415",
+            "https://ubuntu.com/security/notices/USN-7467-1",
+            "https://ubuntu.com/security/notices/USN-7467-2",
+            "https://www.cve.org/CVERecord?id=CVE-2025-32415"
+          ],
+          "PublishedDate": "2025-04-17T17:15:33.733Z",
+          "LastModifiedDate": "2025-04-23T18:17:52.053Z"
+        },
+        {
+          "VulnerabilityID": "CVE-2025-49795",
+          "PkgID": "libxml2@2.13.4-r5",
+          "PkgName": "libxml2",
+          "PkgIdentifier": {
+            "PURL": "pkg:apk/alpine/libxml2@2.13.4-r5?arch=x86_64\u0026distro=3.21.3",
+            "UID": "4520151b542a887b"
+          },
+          "InstalledVersion": "2.13.4-r5",
+          "FixedVersion": "2.13.9-r0",
+          "Status": "fixed",
+          "Layer": {
+            "DiffID": "sha256:0d853d50b128aa460b47e7121849463a14b18d4fd976caf5014744aae24d28aa"
+          },
+          "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2025-49795",
+          "DataSource": {
+            "ID": "alpine",
+            "Name": "Alpine Secdb",
+            "URL": "https://secdb.alpinelinux.org/"
+          },
+          "Title": "libxml: Null pointer dereference leads to Denial of service (DoS)",
+          "Description": "A NULL pointer dereference vulnerability was found in libxml2 when processing XPath XML expressions. This flaw allows an attacker to craft a malicious XML input to libxml2, leading to a denial of service.",
+          "Severity": "HIGH",
+          "CweIDs": [
+            "CWE-825"
+          ],
+          "VendorSeverity": {
+            "alma": 3,
+            "amazon": 3,
+            "oracle-oval": 3,
+            "photon": 3,
+            "redhat": 3,
+            "rocky": 3
+          },
+          "CVSS": {
+            "redhat": {
+              "V3Vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H",
+              "V3Score": 7.5
+            }
+          },
+          "References": [
+            "https://access.redhat.com/errata/RHSA-2025:10630",
+            "https://access.redhat.com/errata/RHSA-2025:19020",
+            "https://access.redhat.com/security/cve/CVE-2025-49795",
+            "https://bugzilla.redhat.com/2372373",
+            "https://bugzilla.redhat.com/2372379",
+            "https://bugzilla.redhat.com/2372385",
+            "https://bugzilla.redhat.com/2372406",
+            "https://bugzilla.redhat.com/show_bug.cgi?id=2372373",
+            "https://bugzilla.redhat.com/show_bug.cgi?id=2372379",
+            "https://bugzilla.redhat.com/show_bug.cgi?id=2372385",
+            "https://bugzilla.redhat.com/show_bug.cgi?id=2372406",
+            "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2025-49794",
+            "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2025-49795",
+            "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2025-49796",
+            "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2025-6021",
+            "https://errata.almalinux.org/10/ALSA-2025-10630.html",
+            "https://errata.rockylinux.org/RLSA-2025:10630",
+            "https://linux.oracle.com/cve/CVE-2025-49795.html",
+            "https://linux.oracle.com/errata/ELSA-2025-10630.html",
+            "https://nvd.nist.gov/vuln/detail/CVE-2025-49795",
+            "https://www.cve.org/CVERecord?id=CVE-2025-49795"
+          ],
+          "PublishedDate": "2025-06-16T16:15:19.203Z",
+          "LastModifiedDate": "2025-10-27T18:15:41.043Z"
+        },
+        {
+          "VulnerabilityID": "CVE-2025-6021",
+          "PkgID": "libxml2@2.13.4-r5",
+          "PkgName": "libxml2",
+          "PkgIdentifier": {
+            "PURL": "pkg:apk/alpine/libxml2@2.13.4-r5?arch=x86_64\u0026distro=3.21.3",
+            "UID": "4520151b542a887b"
+          },
+          "InstalledVersion": "2.13.4-r5",
+          "FixedVersion": "2.13.9-r0",
+          "Status": "fixed",
+          "Layer": {
+            "DiffID": "sha256:0d853d50b128aa460b47e7121849463a14b18d4fd976caf5014744aae24d28aa"
+          },
+          "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2025-6021",
+          "DataSource": {
+            "ID": "alpine",
+            "Name": "Alpine Secdb",
+            "URL": "https://secdb.alpinelinux.org/"
+          },
+          "Title": "libxml2: Integer Overflow in xmlBuildQName() Leads to Stack Buffer Overflow in libxml2",
+          "Description": "A flaw was found in libxml2's xmlBuildQName function, where integer overflows in buffer size calculations can lead to a stack-based buffer overflow. This issue can result in memory corruption or a denial of service when processing crafted input.",
+          "Severity": "HIGH",
+          "CweIDs": [
+            "CWE-121",
+            "CWE-787"
+          ],
+          "VendorSeverity": {
+            "alma": 3,
+            "amazon": 3,
+            "azure": 2,
+            "cbl-mariner": 2,
+            "oracle-oval": 3,
+            "photon": 3,
+            "redhat": 2,
+            "rocky": 3,
+            "ubuntu": 2
+          },
+          "CVSS": {
+            "redhat": {
+              "V3Vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H",
+              "V3Score": 7.5
+            }
+          },
+          "References": [
+            "https://access.redhat.com/errata/RHSA-2025:10630",
+            "https://access.redhat.com/errata/RHSA-2025:10698",
+            "https://access.redhat.com/errata/RHSA-2025:10699",
+            "https://access.redhat.com/errata/RHSA-2025:11580",
+            "https://access.redhat.com/errata/RHSA-2025:12098",
+            "https://access.redhat.com/errata/RHSA-2025:12099",
+            "https://access.redhat.com/errata/RHSA-2025:12199",
+            "https://access.redhat.com/errata/RHSA-2025:12237",
+            "https://access.redhat.com/errata/RHSA-2025:12239",
+            "https://access.redhat.com/errata/RHSA-2025:12240",
+            "https://access.redhat.com/errata/RHSA-2025:12241",
+            "https://access.redhat.com/errata/RHSA-2025:13267",
+            "https://access.redhat.com/errata/RHSA-2025:13289",
+            "https://access.redhat.com/errata/RHSA-2025:13325",
+            "https://access.redhat.com/errata/RHSA-2025:13335",
+            "https://access.redhat.com/errata/RHSA-2025:13336",
+            "https://access.redhat.com/errata/RHSA-2025:14059",
+            "https://access.redhat.com/errata/RHSA-2025:14396",
+            "https://access.redhat.com/errata/RHSA-2025:15308",
+            "https://access.redhat.com/errata/RHSA-2025:15672",
+            "https://access.redhat.com/errata/RHSA-2025:19020",
+            "https://access.redhat.com/security/cve/CVE-2025-6021",
+            "https://bugzilla.redhat.com/2372373",
+            "https://bugzilla.redhat.com/2372379",
+            "https://bugzilla.redhat.com/2372385",
+            "https://bugzilla.redhat.com/2372406",
+            "https://bugzilla.redhat.com/show_bug.cgi?id=2372373",
+            "https://bugzilla.redhat.com/show_bug.cgi?id=2372385",
+            "https://bugzilla.redhat.com/show_bug.cgi?id=2372406",
+            "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2025-49794",
+            "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2025-49796",
+            "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2025-6021",
+            "https://errata.almalinux.org/10/ALSA-2025-10630.html",
+            "https://errata.rockylinux.org/RLSA-2025:10698",
+            "https://gitlab.gnome.org/GNOME/libxml2/-/issues/926",
+            "https://linux.oracle.com/cve/CVE-2025-6021.html",
+            "https://linux.oracle.com/errata/ELSA-2025-12240.html",
+            "https://nvd.nist.gov/vuln/detail/CVE-2025-6021",
+            "https://ubuntu.com/security/notices/USN-7694-1",
+            "https://www.cve.org/CVERecord?id=CVE-2025-6021"
+          ],
+          "PublishedDate": "2025-06-12T13:15:25.59Z",
+          "LastModifiedDate": "2025-10-27T18:15:44.393Z"
+        }
+      ]
+    }
+  ]
+}

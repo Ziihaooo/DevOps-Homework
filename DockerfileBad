@@ -1,0 +1,14 @@
+#Dockerfile without storage optimization
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Copy everything (unsafe and large)
+COPY . .
+
+# Install dependencies (keeps pip cache)
+RUN pip install -r app/requirements.txt
+
+# Expose and run
+EXPOSE 5000
+CMD ["python", "app/app.py"]

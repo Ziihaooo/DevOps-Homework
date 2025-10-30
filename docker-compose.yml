@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: api
+    #the nginx will proxy to 5000 which is api port so dont need to match it to 
+    #host port otherwise it can be accessed by attackers
+    expose:
+      - "5000"
+
+  nginx:
+    image: nginx:1.29-alpine3.22-slim   
+    container_name: nginx
+    #the reverse proxy settings should do inside the nginx.conf
+    ports:
+      - "80:80"
+    #use my nginx conf instead of the image one
+    volumes:
+      - ./app/nginx.conf:/etc/nginx/nginx.conf:ro  
+    #api need to build first so nginx can take the request to api
+    depends_on:
+      - api
