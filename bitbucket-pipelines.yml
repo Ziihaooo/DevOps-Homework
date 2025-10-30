@@ -12,7 +12,7 @@ pipelines:
             - docker
           script:
             - apk add --no-cache curl make 
-            - make dbk
+            - export DOCKER_BUILDKIT=0
             - make trivydownload
             - make build
             - make start

@@ -34,11 +34,6 @@ delete:
 	@if [ -n "$$($(D) ps -aq)" ]; then $(D) rm $$($(D) ps -aq); fi
 	@if [ -n "$$($(D) images -aq)" ]; then $(D) rmi $$($(D) images -aq); fi
 
-
-#disable buildkit
-dbk:
-	export DOCKER_BUILDKIT=0
-
 #download trivy in CI
 trivydownload:
 	curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin
