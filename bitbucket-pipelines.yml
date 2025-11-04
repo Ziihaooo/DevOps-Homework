@@ -1,0 +1,29 @@
+image: alpine:3.20
+
+pipelines:
+  default:
+    - step:
+        name: Test OIDC Deployment to AWS
+        oidc: true               # 关键：启用 OIDC
+        script:
+          # 安装 awscli
+          - apk add --no-cache aws-cli
+
+          # 保存 Bitbucket 发的 OIDC token 到临时文件
+          - echo "$BITBUCKET_STEP_OIDC_TOKEN" > /tmp/bb.token
+
+          # 配置 OIDC 所需的环境变量
+          - export AWS_ROLE_ARN="arn:aws:iam::314146318322:role/PipelineOIDCRole"
+          - export AWS_WEB_IDENTITY_TOKEN_FILE="/tmp/bb.token"
+          - export AWS_REGION="ap-southeast-2"
+
+          # 验证 OIDC 是否生效
+          - echo "Checking AWS identity..."
+          - aws sts get-caller-identity
+
+          # 创建一个测试文件并上传到 S3
+          - echo "Hello from Bitbucket OIDC pipeline!" > testoct.txt
+          - aws s3 cp testoct.txt s3://distinctioncoding-tfstatefilebucket/oidc-test/testoct.txt
+
+          # 检查是否上传成功
+          - aws s3 ls s3://distinctioncoding-tfstatefilebucket/oidc-test/
