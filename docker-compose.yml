@@ -1,0 +1,31 @@
+version: "3.8"
+
+#app service 
+services:
+  app:
+    build:
+      context: ./app
+      dockerfile: Dockerfile
+    container_name: app
+    expose:
+      - "3000"
+    #healthcheck for depending
+    healthcheck:
+    #image comewith wget 
+      test: ["CMD", "wget","-qO-", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+#nginx server
+  nginx:
+    build:
+      context: ./deploy/nginx
+      dockerfile: Dockerfile.nginx
+    container_name: nginx
+    ports:
+      - "80:80"
+    #depends on app
+    depends_on:
+      app:
+        condition: service_healthy
