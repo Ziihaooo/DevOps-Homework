@@ -71,38 +71,10 @@ OICDcheck:
 #same idea for ec2, only focus on one ec2 so ec2 fixed in the env
 
 deploy:
-	@echo "Starting deployment on EC2 via SSM..."
-	@echo "#!/bin/bash" > deploy_ec2.sh
-	@echo "set -e" >> deploy_ec2.sh
-	@echo "echo [INFO] Starting $(PROJECT_NAME) deployment at \`date\`" >> deploy_ec2.sh
-	@echo "if ! command -v docker &>/dev/null; then" >> deploy_ec2.sh
-	@echo "  echo [INSTALL] Installing Docker and tools..." >> deploy_ec2.sh
-	@echo "  sudo yum update -y && sudo yum install -y docker make git" >> deploy_ec2.sh
-	@echo "  sudo systemctl enable docker && sudo systemctl start docker" >> deploy_ec2.sh
-	@echo "fi" >> deploy_ec2.sh
-	@echo "sudo mkdir -p /opt/$(PROJECT_NAME)" >> deploy_ec2.sh
-	@echo "cd /opt/$(PROJECT_NAME)" >> deploy_ec2.sh
-	@echo "if [ ! -d .git ]; then" >> deploy_ec2.sh
-	@echo "  sudo rm -rf * && sudo git clone https://github.com/<yourrepo>/$(PROJECT_NAME).git ." >> deploy_ec2.sh
-	@echo "else" >> deploy_ec2.sh
-	@echo "  sudo git fetch --all && sudo git reset --hard origin/main" >> deploy_ec2.sh
-	@echo "fi" >> deploy_ec2.sh
-	@echo "if [ -f docker-compose.yml ]; then" >> deploy_ec2.sh
-	@echo "  sudo docker compose down -v || true" >> deploy_ec2.sh
-	@echo "  sudo docker system prune -af || true" >> deploy_ec2.sh
-	@echo "  sudo docker compose up -d --build" >> deploy_ec2.sh
-	@echo "elif grep -q ^up: Makefile 2>/dev/null; then" >> deploy_ec2.sh
-	@echo "  sudo make up" >> deploy_ec2.sh
-	@echo "else" >> deploy_ec2.sh
-	@echo "  echo [ERROR] No docker-compose.yml or Makefile found; exit 1" >> deploy_ec2.sh
-	@echo "fi" >> deploy_ec2.sh
-	@echo "echo [DONE] Deployment complete." >> deploy_ec2.sh
-
 	aws ssm send-command \
 		--instance-ids "$(EC2_INSTANCE_ID)" \
 		--document-name "AWS-RunShellScript" \
-		--comment "Deploy $(PROJECT_NAME) $(APP_TAG)" \
-		--parameters file://deploy_ec2.json \
+		--parameters "commands=[bash -c 'sudo yum install -y git && sudo mkdir -p /opt/$(PROJECT_NAME) && cd /opt/$(PROJECT_NAME) && ( [ ! -d .git ] && sudo git clone https://github.com/<yourrepo>/$(PROJECT_NAME).git . || (sudo git fetch --all && sudo git reset --hard origin/main) )']" \
 		--region $(AWS_REGION)
 
 deploy_ec2.json:
