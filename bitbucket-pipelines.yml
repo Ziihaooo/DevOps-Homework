@@ -23,8 +23,8 @@ pipelines:
           script:
             - apk add --no-cache aws-cli make curl
             # AC6 pre-check – Verify Bitbucket OIDC → AWS
-            - make OICDcheck
             - export DOCKER_BUILDKIT=0
+            - make OICDcheck
             # AC6 – Deploy via SSM to EC2 (runs make up)
             - make deploy
             # AC3–AC5 – Verify Nginx & Health
