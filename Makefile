@@ -45,22 +45,29 @@ push:
 
 OICDcheck:
 	@echo "Testing Bitbucket OIDC connection to AWS..."
+	# 1. Save Bitbucket's OIDC token to a temp file
 	echo "$$BITBUCKET_STEP_OIDC_TOKEN" > /tmp/bb.token
 
-	export AWS_ROLE_ARN="$(AWS_ROLE_ARN)"; \
-	export AWS_WEB_IDENTITY_TOKEN_FILE="/tmp/bb.token"; \
-	export AWS_REGION="$(AWS_REGION)"; \
+	# 2. Check AWS identity using OIDC credentials
+	AWS_ROLE_ARN="$(AWS_ROLE_ARN)" \
+	AWS_WEB_IDENTITY_TOKEN_FILE="/tmp/bb.token" \
+	AWS_REGION="$(AWS_REGION)" \
+	aws sts get-caller-identity
 
-	echo "Checking AWS identity..."; \
-	aws sts get-caller-identity; \
+	# 3. Upload test file to S3 to confirm write access
+	echo "Hello from Bitbucket OIDC pipeline!" > testoidc.txt
+	AWS_ROLE_ARN="$(AWS_ROLE_ARN)" \
+	AWS_WEB_IDENTITY_TOKEN_FILE="/tmp/bb.token" \
+	AWS_REGION="$(AWS_REGION)" \
+	aws s3 cp testoidc.txt s3://$(S3_BUCKET)/oidc-test/testoidc.txt
 
-	echo "Hello from Bitbucket OIDC pipeline!" > testoidc.txt; \
-	aws s3 cp testoidc.txt s3://$(S3_BUCKET)/oidc-test/testoidc.txt; \
+	# 4. List uploaded file
+	AWS_ROLE_ARN="$(AWS_ROLE_ARN)" \
+	AWS_WEB_IDENTITY_TOKEN_FILE="/tmp/bb.token" \
+	AWS_REGION="$(AWS_REGION)" \
+	aws s3 ls s3://$(S3_BUCKET)/oidc-test/
 
-	echo "Listing uploaded file..."; \
-	aws s3 ls s3://$(S3_BUCKET)/oidc-test/; \
-
-	echo "OIDC test successful — AWS access verified!"
+	@echo "OIDC test successful — AWS access verified!"
 #same idea for ec2, only focus on one ec2 so ec2 fixed in the env
 deploy:
 	aws ssm send-command \

@@ -22,6 +22,9 @@ pipelines:
           oidc: true
           script:
             - apk add --no-cache aws-cli make curl
+            - export AWS_ROLE_ARN="arn:aws:iam::314146318322:role/PIPELINEOIDCROLE_ZIHAO"
+            - export AWS_WEB_IDENTITY_TOKEN_FILE="/tmp/bb.token"
+            - export AWS_REGION="ap-southeast-2"
             # AC6 pre-check – Verify Bitbucket OIDC → AWS
             - export DOCKER_BUILDKIT=0
             - make OICDcheck
