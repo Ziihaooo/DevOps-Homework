@@ -1,4 +1,4 @@
-.phony: lint build push OICDcheck deploy verify up down clean
+.PHONY: lint build push OICDcheck deploy verify up down clean
 
 #project name = container after you build 
 #docker repo = the name of the docker hub you want
