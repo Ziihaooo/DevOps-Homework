@@ -27,8 +27,8 @@ lint:
 	docker run --rm -v $$(pwd):/app hadolint/hadolint hadolint /app/deploy/nginx/Dockerfile.nginx
 
 build:
-	docker build -t $(DOCKER_USER)/$(DOCKER_REPO)-app:$(APP_TAG) -f app/Dockerfile ./app
-	docker build -t $(DOCKER_USER)/$(DOCKER_REPO)-nginx:$(APP_TAG) -f deploy/nginx/Dockerfile.nginx ./deploy/nginx
+	docker build -t $(DOCKER_USERZ)/$(DOCKER_REPO)-app:$(APP_TAG) -f app/Dockerfile ./app
+	docker build -t $(DOCKER_USERZ)/$(DOCKER_REPO)-nginx:$(APP_TAG) -f deploy/nginx/Dockerfile.nginx ./deploy/nginx
 
 
 #<user>/<repo>:<tag>
@@ -37,10 +37,10 @@ build:
 login:
 	@echo "Logging in to Docker Hub..."
 	@docker login -u $(DOCKER_USERZ) -p $(DOCKER_PASSZ)
-	
+
 push:
-	docker push $(DOCKER_USER)/$(DOCKER_REPO)-app:$(APP_TAG)
-	docker push $(DOCKER_USER)/$(DOCKER_REPO)-nginx:$(APP_TAG)
+	docker push $(DOCKER_USERZ)/$(DOCKER_REPO)-app:$(APP_TAG)
+	docker push $(DOCKER_USERZ)/$(DOCKER_REPO)-nginx:$(APP_TAG)
 	@echo "push successful"
 
 OICDcheck:
