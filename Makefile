@@ -86,8 +86,8 @@ deploy:
 		--instance-ids "$(EC2_INSTANCE_ID)" \
 		--document-name "AWS-RunShellScript" \
 		--comment "Deploy $(PROJECT_NAME) $(APP_TAG)" \
-		--parameters "commands=['bash -c \"set -e; \
-		echo [INFO] Starting $(PROJECT_NAME) deployment at \`date\`; \
+		--parameters '{"commands":["bash -c '\''set -e; \
+		echo [INFO] Starting $(PROJECT_NAME) deployment at `date`; \
 		if ! command -v docker &> /dev/null; then \
 			echo [INSTALL] Installing Docker...; \
 			sudo yum update -y; \
@@ -118,11 +118,9 @@ deploy:
 		sudo docker compose down -v || true; \
 		sudo docker system prune -af || true; \
 		sudo docker compose up -d --build; \
-		echo [DONE] Deployment successful.\" ]" \
+		echo [DONE] Deployment successful.'\'']}' \
 		--region $(AWS_REGION)
 	@echo "Deployment command sent via SSM successfully."
-
-
 
 verify:
 	AWS_REGION="$(AWS_REGION)" \
