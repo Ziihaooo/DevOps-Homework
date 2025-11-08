@@ -11,6 +11,7 @@ pipelines:
             - apk add --no-cache make git
             # AC1 – Lint gate
             - make lint
+            - export DOCKER_BUILDKIT=0
             # AC2 – Image published
             - make build
             - make push
@@ -22,6 +23,7 @@ pipelines:
             - apk add --no-cache aws-cli make curl
             # AC6 pre-check – Verify Bitbucket OIDC → AWS
             - make OICDcheck
+            - export DOCKER_BUILDKIT=0
             # AC6 – Deploy via SSM to EC2 (runs make up)
             - make deploy
             # AC6 – Deploy via SSM to EC2 (runs make up)
