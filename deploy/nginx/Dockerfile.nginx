@@ -1,7 +1,8 @@
 #basic shell satisfy all the need for builder
 FROM alpine:3.20 AS builder
 WORKDIR /config
-COPY deploy/nginx/default.conf .
+#because the docker compose will change to deploy nginx dir
+COPY default.conf .
 
 #change the default.config in the image be my default.conf
 #image with only low vul
