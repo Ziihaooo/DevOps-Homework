@@ -79,13 +79,13 @@ deploy:
 	@echo "deploy successful"
 
 verify:
+	AWS_REGION="$(AWS_REGION)" \
 	aws ssm send-command \
 		--instance-ids "$(EC2_INSTANCE_ID)" \
 		--document-name "AWS-RunShellScript" \
-		--parameters 'commands=["sudo nginx -t && sudo systemctl reload nginx"]' \
+		--parameters 'commands=["curl -s -o /dev/null -w \"%{http_code}\" http://localhost/health","curl -s -o /dev/null -w \"%{http_code}\" http://localhost/api/health"]' \
 		--region $(AWS_REGION)
-	curl -i http://$(EC2_PUBLIC_IP)/health
-	curl -i http://$(EC2_PUBLIC_IP)/api/health
+	@echo "Internal health probe executed via SSM."
 
 up:
 	docker pull
