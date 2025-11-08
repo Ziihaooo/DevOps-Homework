@@ -71,15 +71,14 @@ OICDcheck:
 #same idea for ec2, only focus on one ec2 so ec2 fixed in the env
 
 deploy:
+	@echo "🚀 Deploying $(PROJECT_NAME) on EC2 via SSM..."
 	aws ssm send-command \
+		--region $(AWS_REGION) \
 		--instance-ids "$(EC2_INSTANCE_ID)" \
 		--document-name "AWS-RunShellScript" \
-		--parameters "commands=[bash -c 'sudo yum install -y git && sudo mkdir -p /opt/$(PROJECT_NAME) && cd /opt/$(PROJECT_NAME) && ( [ ! -d .git ] && sudo git clone https://github.com/<yourrepo>/$(PROJECT_NAME).git . || (sudo git fetch --all && sudo git reset --hard origin/main) )']" \
-		--region $(AWS_REGION)
-
-deploy_ec2.json:
-	@echo "{ \"commands\": [\"$$(cat deploy_ec2.sh | sed 's/\"/\\\\\"/g')\"] }" > deploy_ec2.json
-
+		--comment "Deploy $(PROJECT_NAME) $(APP_TAG)" \
+		--parameters '{"workingDirectory":["/opt/$(PROJECT_NAME)"],"commands":["sudo make up"]}'
+	@echo "✅ SSM deployment command sent. Waiting for instance to start stack..."
 
 verify:
 	AWS_REGION="$(AWS_REGION)" \
