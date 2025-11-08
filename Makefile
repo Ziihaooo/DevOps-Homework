@@ -45,23 +45,23 @@ push:
 
 OICDcheck:
 	@echo "Testing Bitbucket OIDC connection to AWS..."
-	# 1. Save Bitbucket's OIDC token to a temp file
+# 1. Save Bitbucket's OIDC token to a temp file
 	echo "$$BITBUCKET_STEP_OIDC_TOKEN" > /tmp/bb.token
 
-	# 2. Check AWS identity using OIDC credentials
+# 2. Check AWS identity using OIDC credentials
 	AWS_ROLE_ARN="$(AWS_ROLE_ARN)" \
 	AWS_WEB_IDENTITY_TOKEN_FILE="/tmp/bb.token" \
 	AWS_REGION="$(AWS_REGION)" \
 	aws sts get-caller-identity
 
-	# 3. Upload test file to S3 to confirm write access
+# 3. Upload test file to S3 to confirm write access
 	echo "Hello from Bitbucket OIDC pipeline!" > testoidc.txt
 	AWS_ROLE_ARN="$(AWS_ROLE_ARN)" \
 	AWS_WEB_IDENTITY_TOKEN_FILE="/tmp/bb.token" \
 	AWS_REGION="$(AWS_REGION)" \
 	aws s3 cp testoidc.txt s3://$(S3_BUCKET)/oidc-test/testoidc.txt
 
-	# 4. List uploaded file
+# 4. List uploaded file
 	AWS_ROLE_ARN="$(AWS_ROLE_ARN)" \
 	AWS_WEB_IDENTITY_TOKEN_FILE="/tmp/bb.token" \
 	AWS_REGION="$(AWS_REGION)" \
@@ -69,22 +69,69 @@ OICDcheck:
 
 	@echo "OIDC test successful — AWS access verified!"
 #same idea for ec2, only focus on one ec2 so ec2 fixed in the env
+.PHONY: lint build push OIDCcheck deploy verify up down clean
+
+PROJECT_NAME := codetocloud
+DOCKER_REPO ?= codetocloud
+APP_TAG ?= $(or $(VERSION), $(shell git rev-parse --short HEAD))
+
+EC2_INSTANCE_ID ?= i-0b0d36eecbf0e411a
+AWS_REGION ?= ap-southeast-2
+AWS_ROLE_ARN ?= arn:aws:iam::314146318322:role/PIPELINEOIDCROLE_ZIHAO
+S3_BUCKET ?= uat-artifacts-zihao
+
 deploy:
+	@echo "Starting automated deployment on EC2 via SSM..."
 	aws ssm send-command \
 		--instance-ids "$(EC2_INSTANCE_ID)" \
 		--document-name "AWS-RunShellScript" \
-		--comment "Deploy and restart codetocloud stack" \
-		--parameters 'commands=[
-			"set -e",
-			"sudo mkdir -p /opt/codetocloud",
-			"cd /opt/codetocloud",
-			"if [ ! -d .git ]; then sudo rm -rf * && sudo git clone https://github.com/<yourrepo>/codetocloud.git .; else sudo git reset --hard && sudo git pull; fi",
-			"sudo docker compose down -v || true",
-			"sudo docker system prune -af || true",
-			"sudo docker compose up -d --build"
-		]' \
+		--comment "Deploy $(PROJECT_NAME) $(APP_TAG)" \
+		--parameters '{
+			"commands": [
+				"set -e",
+				"echo \"[INFO] Starting $(PROJECT_NAME) deployment at $$(date)\"",
+
+# 1. Install Docker if missing"
+				"if ! command -v docker &> /dev/null; then",
+				"  echo \"[INSTALL] Installing Docker...\"",
+				"  sudo yum update -y",
+				"  sudo yum install -y docker",
+				"  sudo systemctl enable docker",
+				"  sudo systemctl start docker",
+				"fi",
+
+# 2. Install Docker Compose if missing
+				"if ! docker compose version &> /dev/null; then",
+				"  echo \"[INSTALL] Installing Docker Compose plugin...\"",
+				"  sudo mkdir -p /usr/libexec/docker/cli-plugins/",
+				"  sudo curl -SL https://github.com/docker/compose/releases/download/v2.24.6/docker-compose-linux-x86_64 -o /usr/libexec/docker/cli-plugins/docker-compose",
+				"  sudo chmod +x /usr/libexec/docker/cli-plugins/docker-compose",
+				"fi",
+
+				"echo \"[CHECK] Docker version:\" && docker --version",
+				"echo \"[CHECK] Docker Compose version:\" && docker compose version",
+
+#3. Deploy or update repository"
+				"sudo mkdir -p /opt/$(PROJECT_NAME)",
+				"cd /opt/$(PROJECT_NAME)",
+				"if [ ! -d .git ]; then",
+				"  echo \"[CLONE] First-time setup, cloning repository...\"",
+				"  sudo rm -rf * && sudo git clone https://github.com/<yourrepo>/$(PROJECT_NAME).git .",
+				"else",
+				"  echo \"[UPDATE] Pulling latest code...\"",
+				"  sudo git fetch --all && sudo git reset --hard origin/main",
+				"fi",
+
+#4. Rebuild and restart containers
+				"echo \"[DOCKER] Rebuilding containers...\"",
+				"sudo docker compose down -v || true",
+				"sudo docker system prune -af || true",
+				"sudo docker compose up -d --build",
+				"echo \"[DONE] Deployment successful.\""
+			]
+		}' \
 		--region $(AWS_REGION)
-	@echo "deploy successful"
+	@echo "Deployment command sent via SSM successfully."
 
 
 verify:
