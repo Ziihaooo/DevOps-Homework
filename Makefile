@@ -15,7 +15,6 @@ APP_TAG ?= $(or $(VERSION), $(shell git rev-parse --short HEAD))
 #dont reveal credential
 #with $() will first check is there any var provide after make command
 #if not then will use the default in the env (bitbucket env)
-DOCKER_USER ?= zavierrr
 EC2_INSTANCE_ID ?= i-0b0d36eecbf0e411a
 AWS_REGION ?= ap-southeast-2
 AWS_ROLE_ARN ?= arn:aws:iam::314146318322:role/PIPELINEOIDCROLE_ZIHAO
@@ -28,11 +27,16 @@ lint:
 	docker run --rm -v $$(pwd):/app hadolint/hadolint hadolint /app/deploy/nginx/Dockerfile.nginx
 
 build:
-	docker compose build
+	docker build -t $(APP_IMAGE) -f app/Dockerfile ./app
+	docker build -t $(NGINX_IMAGE) -f deploy/nginx/Dockerfile.nginx ./deploy/nginx
+
 
 #<user>/<repo>:<tag>
 # as the only one who can push the image will only assigned to one exact docker hub
 # so the docker user must be fixed in the env
+login:
+	@echo "Logging in to Docker Hub..."
+	@docker login -u $(DOCKER_USERZ) -p $(DOCKER_PASSZ)
 push:
 	@echo "pushing images"
 	docker tag $(PROJECT_NAME)-app $(DOCKER_USER)/$(DOCKER_REPO)-app:$(APP_TAG)
