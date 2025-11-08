@@ -71,41 +71,29 @@ OICDcheck:
 #same idea for ec2, only focus on one ec2 so ec2 fixed in the env
 
 deploy:
-	@echo "Starting enterprise-grade deployment on EC2 via SSM..."
+	@echo "Starting deployment on EC2 via SSM..."
+
+	# write script to a temporary file
+	@echo "set -e" > /tmp/deploy_script.sh
+	@echo "echo [INFO] Starting $(PROJECT_NAME) deployment at \`date\`" >> /tmp/deploy_script.sh
+	@echo "if ! command -v docker &> /dev/null; then" >> /tmp/deploy_script.sh
+	@echo "  echo [INSTALL] Installing Docker and tools...; sudo yum update -y && sudo yum install -y docker make git; sudo systemctl enable docker && sudo systemctl start docker;" >> /tmp/deploy_script.sh
+	@echo "fi" >> /tmp/deploy_script.sh
+	@echo "sudo mkdir -p /opt/$(PROJECT_NAME)" >> /tmp/deploy_script.sh
+	@echo "cd /opt/$(PROJECT_NAME)" >> /tmp/deploy_script.sh
+	@echo "if [ ! -d .git ]; then sudo rm -rf * && sudo git clone https://github.com/<yourrepo>/$(PROJECT_NAME).git .; else sudo git fetch --all && sudo git reset --hard origin/main; fi" >> /tmp/deploy_script.sh
+	@echo "if [ -f docker-compose.yml ]; then sudo docker compose down -v || true; sudo docker system prune -af || true; sudo docker compose up -d --build; elif grep -q ^up: Makefile 2>/dev/null; then sudo make up; else echo [ERROR] No deploy target found; exit 1; fi" >> /tmp/deploy_script.sh
+	@echo "echo [DONE] Deployment complete." >> /tmp/deploy_script.sh
+
 	aws ssm send-command \
 		--instance-ids "$(EC2_INSTANCE_ID)" \
 		--document-name "AWS-RunShellScript" \
 		--comment "Deploy $(PROJECT_NAME) $(APP_TAG)" \
-		--parameters "commands=[bash -c 'set -e; \
-		echo [INFO] Starting $(PROJECT_NAME) deployment at \`date\`; \
-		if ! command -v docker &> /dev/null; then \
-			echo [INSTALL] Installing Docker and tools...; \
-			sudo yum update -y && sudo yum install -y docker make git; \
-			sudo systemctl enable docker && sudo systemctl start docker; \
-		fi; \
-		sudo mkdir -p /opt/$(PROJECT_NAME); \
-		cd /opt/$(PROJECT_NAME); \
-		if [ ! -d .git ]; then \
-			echo [CLONE] Cloning repository...; \
-			sudo rm -rf * && sudo git clone https://github.com/<yourrepo>/$(PROJECT_NAME).git .; \
-		else \
-			echo [UPDATE] Pulling latest code...; \
-			sudo git fetch --all && sudo git reset --hard origin/main; \
-		fi; \
-		if [ -f docker-compose.yml ]; then \
-			echo [DOCKER] Building and starting containers...; \
-			sudo docker compose down -v || true; \
-			sudo docker system prune -af || true; \
-			sudo docker compose up -d --build; \
-		elif grep -q ^up: Makefile 2>/dev/null; then \
-			echo [MAKE] Running make up...; \
-			sudo make up; \
-		else \
-			echo [ERROR] No docker-compose.yml or Makefile found; exit 1; \
-		fi; \
-		echo [DONE] Deployment complete.']" \
+		--parameters file://<(echo "{\"commands\": [\"$$(cat /tmp/deploy_script.sh | sed 's/\"/\\\\\"/g')\"]}") \
 		--region $(AWS_REGION)
+
 	@echo "Deployment command sent via SSM successfully."
+
 
 verify:
 	AWS_REGION="$(AWS_REGION)" \
