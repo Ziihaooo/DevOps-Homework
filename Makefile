@@ -86,52 +86,42 @@ deploy:
 		--instance-ids "$(EC2_INSTANCE_ID)" \
 		--document-name "AWS-RunShellScript" \
 		--comment "Deploy $(PROJECT_NAME) $(APP_TAG)" \
-		--parameters '{
-			"commands": [
-				"set -e",
-				"echo \"[INFO] Starting $(PROJECT_NAME) deployment at $$(date)\"",
-
-# 1. Install Docker if missing"
-				"if ! command -v docker &> /dev/null; then",
-				"  echo \"[INSTALL] Installing Docker...\"",
-				"  sudo yum update -y",
-				"  sudo yum install -y docker",
-				"  sudo systemctl enable docker",
-				"  sudo systemctl start docker",
-				"fi",
-
-# 2. Install Docker Compose if missing
-				"if ! docker compose version &> /dev/null; then",
-				"  echo \"[INSTALL] Installing Docker Compose plugin...\"",
-				"  sudo mkdir -p /usr/libexec/docker/cli-plugins/",
-				"  sudo curl -SL https://github.com/docker/compose/releases/download/v2.24.6/docker-compose-linux-x86_64 -o /usr/libexec/docker/cli-plugins/docker-compose",
-				"  sudo chmod +x /usr/libexec/docker/cli-plugins/docker-compose",
-				"fi",
-
-				"echo \"[CHECK] Docker version:\" && docker --version",
-				"echo \"[CHECK] Docker Compose version:\" && docker compose version",
-
-#3. Deploy or update repository"
-				"sudo mkdir -p /opt/$(PROJECT_NAME)",
-				"cd /opt/$(PROJECT_NAME)",
-				"if [ ! -d .git ]; then",
-				"  echo \"[CLONE] First-time setup, cloning repository...\"",
-				"  sudo rm -rf * && sudo git clone https://github.com/<yourrepo>/$(PROJECT_NAME).git .",
-				"else",
-				"  echo \"[UPDATE] Pulling latest code...\"",
-				"  sudo git fetch --all && sudo git reset --hard origin/main",
-				"fi",
-
-#4. Rebuild and restart containers
-				"echo \"[DOCKER] Rebuilding containers...\"",
-				"sudo docker compose down -v || true",
-				"sudo docker system prune -af || true",
-				"sudo docker compose up -d --build",
-				"echo \"[DONE] Deployment successful.\""
-			]
-		}' \
+		--parameters "commands=['bash -c \"set -e; \
+		echo [INFO] Starting $(PROJECT_NAME) deployment at \`date\`; \
+		if ! command -v docker &> /dev/null; then \
+			echo [INSTALL] Installing Docker...; \
+			sudo yum update -y; \
+			sudo yum install -y docker; \
+			sudo systemctl enable docker; \
+			sudo systemctl start docker; \
+		fi; \
+		if ! docker compose version &> /dev/null; then \
+			echo [INSTALL] Installing Docker Compose plugin...; \
+			sudo mkdir -p /usr/libexec/docker/cli-plugins/; \
+			sudo curl -SL https://github.com/docker/compose/releases/download/v2.24.6/docker-compose-linux-x86_64 -o /usr/libexec/docker/cli-plugins/docker-compose; \
+			sudo chmod +x /usr/libexec/docker/cli-plugins/docker-compose; \
+		fi; \
+		echo [CHECK] Docker version:; docker --version; \
+		echo [CHECK] Docker Compose version:; docker compose version; \
+		sudo mkdir -p /opt/$(PROJECT_NAME); \
+		cd /opt/$(PROJECT_NAME); \
+		if [ ! -d .git ]; then \
+			echo [CLONE] Cloning repository...; \
+			sudo rm -rf *; \
+			sudo git clone https://github.com/<yourrepo>/$(PROJECT_NAME).git .; \
+		else \
+			echo [UPDATE] Pulling latest code...; \
+			sudo git fetch --all; \
+			sudo git reset --hard origin/main; \
+		fi; \
+		echo [DOCKER] Rebuilding containers...; \
+		sudo docker compose down -v || true; \
+		sudo docker system prune -af || true; \
+		sudo docker compose up -d --build; \
+		echo [DONE] Deployment successful.\" ]" \
 		--region $(AWS_REGION)
 	@echo "Deployment command sent via SSM successfully."
+
 
 
 verify:
