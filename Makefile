@@ -79,7 +79,6 @@ deploy:
 	@echo "deploy successful"
 
 verify:
-	verify:
 	aws ssm send-command \
 		--instance-ids "$(EC2_INSTANCE_ID)" \
 		--document-name "AWS-RunShellScript" \
