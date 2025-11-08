@@ -73,10 +73,19 @@ deploy:
 	aws ssm send-command \
 		--instance-ids "$(EC2_INSTANCE_ID)" \
 		--document-name "AWS-RunShellScript" \
-		--comment "Trigger Docker Compose Up" \
-		--parameters 'commands=["cd /home/ec2-user/codetocloud && make up"]' \
+		--comment "Deploy and restart codetocloud stack" \
+		--parameters 'commands=[
+			"set -e",
+			"sudo mkdir -p /opt/codetocloud",
+			"cd /opt/codetocloud",
+			"if [ ! -d .git ]; then sudo rm -rf * && sudo git clone https://github.com/<yourrepo>/codetocloud.git .; else sudo git reset --hard && sudo git pull; fi",
+			"sudo docker compose down -v || true",
+			"sudo docker system prune -af || true",
+			"sudo docker compose up -d --build"
+		]' \
 		--region $(AWS_REGION)
 	@echo "deploy successful"
+
 
 verify:
 	AWS_REGION="$(AWS_REGION)" \
