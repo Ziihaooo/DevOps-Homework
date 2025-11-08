@@ -27,7 +27,5 @@ pipelines:
             - export DOCKER_BUILDKIT=0
             # AC6 – Deploy via SSM to EC2 (runs make up)
             - make deploy
-            # AC6 – Deploy via SSM to EC2 (runs make up)
-            - make deploy
             # AC3–AC5 – Verify Nginx & Health
             - make verify
