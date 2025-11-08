@@ -72,27 +72,41 @@ OICDcheck:
 
 deploy:
 	@echo "Starting deployment on EC2 via SSM..."
-
-	# write script to a temporary file
-	@echo "set -e" > /tmp/deploy_script.sh
-	@echo "echo [INFO] Starting $(PROJECT_NAME) deployment at \`date\`" >> /tmp/deploy_script.sh
-	@echo "if ! command -v docker &> /dev/null; then" >> /tmp/deploy_script.sh
-	@echo "  echo [INSTALL] Installing Docker and tools...; sudo yum update -y && sudo yum install -y docker make git; sudo systemctl enable docker && sudo systemctl start docker;" >> /tmp/deploy_script.sh
-	@echo "fi" >> /tmp/deploy_script.sh
-	@echo "sudo mkdir -p /opt/$(PROJECT_NAME)" >> /tmp/deploy_script.sh
-	@echo "cd /opt/$(PROJECT_NAME)" >> /tmp/deploy_script.sh
-	@echo "if [ ! -d .git ]; then sudo rm -rf * && sudo git clone https://github.com/<yourrepo>/$(PROJECT_NAME).git .; else sudo git fetch --all && sudo git reset --hard origin/main; fi" >> /tmp/deploy_script.sh
-	@echo "if [ -f docker-compose.yml ]; then sudo docker compose down -v || true; sudo docker system prune -af || true; sudo docker compose up -d --build; elif grep -q ^up: Makefile 2>/dev/null; then sudo make up; else echo [ERROR] No deploy target found; exit 1; fi" >> /tmp/deploy_script.sh
-	@echo "echo [DONE] Deployment complete." >> /tmp/deploy_script.sh
+	@echo "#!/bin/bash" > deploy_ec2.sh
+	@echo "set -e" >> deploy_ec2.sh
+	@echo "echo [INFO] Starting $(PROJECT_NAME) deployment at \`date\`" >> deploy_ec2.sh
+	@echo "if ! command -v docker &>/dev/null; then" >> deploy_ec2.sh
+	@echo "  echo [INSTALL] Installing Docker and tools..." >> deploy_ec2.sh
+	@echo "  sudo yum update -y && sudo yum install -y docker make git" >> deploy_ec2.sh
+	@echo "  sudo systemctl enable docker && sudo systemctl start docker" >> deploy_ec2.sh
+	@echo "fi" >> deploy_ec2.sh
+	@echo "sudo mkdir -p /opt/$(PROJECT_NAME)" >> deploy_ec2.sh
+	@echo "cd /opt/$(PROJECT_NAME)" >> deploy_ec2.sh
+	@echo "if [ ! -d .git ]; then" >> deploy_ec2.sh
+	@echo "  sudo rm -rf * && sudo git clone https://github.com/<yourrepo>/$(PROJECT_NAME).git ." >> deploy_ec2.sh
+	@echo "else" >> deploy_ec2.sh
+	@echo "  sudo git fetch --all && sudo git reset --hard origin/main" >> deploy_ec2.sh
+	@echo "fi" >> deploy_ec2.sh
+	@echo "if [ -f docker-compose.yml ]; then" >> deploy_ec2.sh
+	@echo "  sudo docker compose down -v || true" >> deploy_ec2.sh
+	@echo "  sudo docker system prune -af || true" >> deploy_ec2.sh
+	@echo "  sudo docker compose up -d --build" >> deploy_ec2.sh
+	@echo "elif grep -q ^up: Makefile 2>/dev/null; then" >> deploy_ec2.sh
+	@echo "  sudo make up" >> deploy_ec2.sh
+	@echo "else" >> deploy_ec2.sh
+	@echo "  echo [ERROR] No docker-compose.yml or Makefile found; exit 1" >> deploy_ec2.sh
+	@echo "fi" >> deploy_ec2.sh
+	@echo "echo [DONE] Deployment complete." >> deploy_ec2.sh
 
 	aws ssm send-command \
 		--instance-ids "$(EC2_INSTANCE_ID)" \
 		--document-name "AWS-RunShellScript" \
 		--comment "Deploy $(PROJECT_NAME) $(APP_TAG)" \
-		--parameters file://<(echo "{\"commands\": [\"$$(cat /tmp/deploy_script.sh | sed 's/\"/\\\\\"/g')\"]}") \
+		--parameters file://deploy_ec2.json \
 		--region $(AWS_REGION)
 
-	@echo "Deployment command sent via SSM successfully."
+deploy_ec2.json:
+	@echo "{ \"commands\": [\"$$(cat deploy_ec2.sh | sed 's/\"/\\\\\"/g')\"] }" > deploy_ec2.json
 
 
 verify:
