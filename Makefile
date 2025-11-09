@@ -1,4 +1,4 @@
-.PHONY: lint build push OICDcheck deploy verify up down clean
+.PHONY: lint build push OICDcheck upload deploy verify up down clean
 
 #project name = container after you build 
 #docker repo = the name of the docker hub you want
@@ -15,10 +15,15 @@ APP_TAG ?= $(or $(VERSION), $(shell git rev-parse --short HEAD))
 #dont reveal credential
 #with $() will first check is there any var provide after make command
 #if not then will use the default in the env (bitbucket env)
-EC2_INSTANCE_ID ?= i-0b0d36eecbf0e411a
+EC2_INSTANCE_ID ?= i-01a647dab0456420a
 AWS_REGION ?= ap-southeast-2
 AWS_ROLE_ARN ?= arn:aws:iam::314146318322:role/PIPELINEOIDCROLE_ZIHAO
 S3_BUCKET ?= uat-artifacts-zihao
+#run shell command and give the output to the var 
+#1$ run is make file var,2$ run is shell env var
+#$Docker var will pass to shell
+DOCKER_USERZ ?= $(shell echo $$DOCKER_USERZ)
+DOCKER_PASSZ ?= $(shell echo $$DOCKER_PASSZ)
 
 #lint
 lint:
@@ -68,31 +73,48 @@ OICDcheck:
 	aws s3 ls s3://$(S3_BUCKET)/oidc-test/
 
 	@echo "OIDC test successful — AWS access verified!"
+
+#this is use for downloading compose in ec2 I cant find a way
+#used it for one time local use
+upload-compose:
+	@echo "📦 Uploading docker-compose binary to S3..."
+	aws s3 cp docker-compose s3://uat-artifacts-zihao/tools/docker-compose
+	@echo "✅ docker-compose uploaded"
 #same idea for ec2, only focus on one ec2 so ec2 fixed in the env
 
+upload:
+	@echo "📦 Packaging and uploading $(PROJECT_NAME) to S3..."
+	tar -czf $(PROJECT_NAME).tar.gz app deploy docker-compose.yml Makefile .env.template
+	aws s3 cp $(PROJECT_NAME).tar.gz s3://uat-artifacts-zihao/deploy/$(PROJECT_NAME).tar.gz
+	rm $(PROJECT_NAME).tar.gz
+	@echo "✅ Upload complete"
+
 deploy:
-	@echo "🚀 Deploying $(PROJECT_NAME) on EC2 via SSM..."
+	@echo "🚀 Deploying $(PROJECT_NAME) to EC2 via SSM..."
 	aws ssm send-command \
 		--region $(AWS_REGION) \
 		--instance-ids "$(EC2_INSTANCE_ID)" \
 		--document-name "AWS-RunShellScript" \
-		--comment "Deploy $(PROJECT_NAME) $(APP_TAG)" \
-		--parameters '{"workingDirectory":["/opt/$(PROJECT_NAME)"],"commands":["sudo make up"]}'
-	@echo "✅ SSM deployment command sent. Waiting for instance to start stack..."
+		--comment "Deploy $(PROJECT_NAME)" \
+		--parameters "{\"commands\":[\"set -e && echo ====== [0/5] Installing dependencies ====== && sudo yum install -y make docker && sudo systemctl enable docker && sudo systemctl start docker\",\"echo ====== [0.5/5] Installing docker-compose ====== && sudo aws s3 cp s3://uat-artifacts-zihao/tools/docker-compose /usr/local/bin/docker-compose && sudo chmod +x /usr/local/bin/docker-compose\",\"echo ====== [1/5] Fetching latest source code ====== && sudo mkdir -p /opt/$(PROJECT_NAME) && sudo rm -rf /opt/$(PROJECT_NAME)/* && aws s3 cp s3://uat-artifacts-zihao/deploy/$(PROJECT_NAME).tar.gz /tmp/$(PROJECT_NAME).tar.gz && sudo tar -xzf /tmp/$(PROJECT_NAME).tar.gz -C /opt/$(PROJECT_NAME)\",\"cd /opt/$(PROJECT_NAME) && echo ====== [2/5] Generating environment file ====== && sed -e 's|DOCKER_USERZ=|DOCKER_USERZ=$(DOCKER_USERZ)|' -e 's|DOCKER_REPO=|DOCKER_REPO=$(DOCKER_REPO)|' -e 's|APP_TAG=|APP_TAG=$(APP_TAG)|' .env.template > .env && cat .env\",\"cd /opt/$(PROJECT_NAME) && echo ====== [3/5] Building and starting containers ====== && sudo make up\",\"echo ====== [4/5] Deployment complete! ======\"]}"
+	@echo "✅ SSM deployment command sent successfully."
 
+	
+
+	
 verify:
-	AWS_REGION="$(AWS_REGION)" \
 	aws ssm send-command \
 		--instance-ids "$(EC2_INSTANCE_ID)" \
 		--document-name "AWS-RunShellScript" \
-		--parameters 'commands=["curl -s -o /dev/null -w \"%{http_code}\" http://localhost/health","curl -s -o /dev/null -w \"%{http_code}\" http://localhost/api/health"]' \
+		--parameters 'commands=["curl -I http://localhost/health", "curl -I http://localhost/api/health"]' \
 		--region $(AWS_REGION)
-	@echo "Internal health probe executed via SSM."
 
 up:
-	docker pull
-	docker compose up -d --build
-	@"EC2 running"
+	@echo "🚀 Building and starting containers..."
+	sudo docker-compose build --no-cache
+	sudo docker-compose up -d --remove-orphans
+	@echo "✅ Stack is running!"
+
 
 down:
 	docker compose down -v

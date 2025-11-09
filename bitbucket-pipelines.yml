@@ -27,8 +27,11 @@ pipelines:
             - export AWS_REGION="ap-southeast-2"
             # AC6 pre-check – Verify Bitbucket OIDC → AWS
             - export DOCKER_BUILDKIT=0
+            - export DOCKER_USERZ=$DOCKER_USERZ
             - make OICDcheck
             # AC6 – Deploy via SSM to EC2 (runs make up)
+            - make upload-compose
+            - make upload 
             - make deploy
             # AC3–AC5 – Verify Nginx & Health
             - make verify
