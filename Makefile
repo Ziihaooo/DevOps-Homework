@@ -95,59 +95,7 @@ deploy:
 	@echo "Tag: $(APP_TAG)"
 	@echo "Instance: $(EC2_INSTANCE_ID)"
 	@echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-	aws ssm send-command \
-		--region $(AWS_REGION) \
-		--instance-ids "$(EC2_INSTANCE_ID)" \
-		--document-name "AWS-RunShellScript" \
-		--comment "Deploy $(PROJECT_NAME)-$(APP_TAG)" \
-		--parameters 'commands=[
-			"set -e",
-			"echo \"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\"",
-			"echo \"🚀 Starting Deployment\"",
-			"echo \"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\"",
-			"echo \"Tag: $(APP_TAG)\"",
-			"echo",
-			"echo \"📦 Step 1/6: Installing Docker & Docker Compose\"",
-			"sudo yum install -y docker || true",
-			"sudo systemctl enable docker",
-			"sudo systemctl start docker",
-			"sudo curl -SL https://github.com/docker/compose/releases/latest/download/docker-compose-linux-x86_64 -o /usr/local/bin/docker-compose",
-			"sudo chmod +x /usr/local/bin/docker-compose",
-			"docker --version",
-			"docker-compose --version",
-			"echo \"✅ Docker installed\"",
-			"echo",
-			"echo \"📁 Step 2/6: Preparing deployment directory\"",
-			"sudo mkdir -p $(DEPLOY_PATH)",
-			"cd $(DEPLOY_PATH)",
-			"echo \"Working in: $(DEPLOY_PATH)\"",
-			"echo",
-			"echo \"📥 Step 3/6: Downloading from S3\"",
-			"aws s3 cp s3://$(S3_BUCKET)/$(S3_COMPOSE) docker-compose.yml --region $(AWS_REGION)",
-			"aws s3 cp s3://$(S3_BUCKET)/$(S3_MAKEFILE) Makefile --region $(AWS_REGION)",
-			"echo \"✅ Downloaded from S3\"",
-			"ls -lh",
-			"echo",
-			"echo \"📝 Step 4/6: Creating .env file\"",
-			"sudo tee .env > /dev/null <<EOF",
-			"PROJECT_NAME=$(PROJECT_NAME)",
-			"DOCKER_USERZ=$(DOCKER_USERZ)",
-			"DOCKER_REPO=$(DOCKER_REPO)",
-			"APP_TAG=$(APP_TAG)",
-			"EOF",
-			"echo \"✅ .env file created:\"",
-			"cat .env",
-			"echo",
-			"echo \"🚀 Step 5/6: Running make up\"",
-			"sudo make up",
-			"echo",
-			"echo \"✅ Step 6/6: Deployment Complete!\"",
-			"echo \"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\"",
-			"echo \"Tag deployed: $(APP_TAG)\"",
-			"echo \"Path: $(DEPLOY_PATH)\""
-		]' \
-		--region $(AWS_REGION) \
-		--output text
+	aws ssm send-command --region $(AWS_REGION) --instance-ids "$(EC2_INSTANCE_ID)" --document-name "AWS-RunShellScript" --comment "Deploy $(PROJECT_NAME)-$(APP_TAG)" --parameters 'commands=["set -e","echo Starting Deployment","echo Tag: $(APP_TAG)","sudo yum install -y docker || true","sudo systemctl enable docker","sudo systemctl start docker","sudo curl -SL https://github.com/docker/compose/releases/latest/download/docker-compose-linux-x86_64 -o /usr/local/bin/docker-compose","sudo chmod +x /usr/local/bin/docker-compose","docker --version","docker-compose --version","echo Docker installed","sudo mkdir -p $(DEPLOY_PATH)","cd $(DEPLOY_PATH)","echo Downloading from S3","aws s3 cp s3://$(S3_BUCKET)/$(S3_COMPOSE) docker-compose.yml --region $(AWS_REGION)","aws s3 cp s3://$(S3_BUCKET)/$(S3_MAKEFILE) Makefile --region $(AWS_REGION)","echo Downloaded from S3","ls -lh","sudo tee .env > /dev/null <<EOF","PROJECT_NAME=$(PROJECT_NAME)","DOCKER_USERZ=$(DOCKER_USERZ)","DOCKER_REPO=$(DOCKER_REPO)","APP_TAG=$(APP_TAG)","EOF","echo .env file created","cat .env","echo Running make up","sudo make up","echo Deployment Complete","echo Tag deployed: $(APP_TAG)"]' --region $(AWS_REGION) --output text
 	@echo ""
 	@echo "✅ Deployment initiated!"
 	@echo "💡 Run 'make verify' to check status"
