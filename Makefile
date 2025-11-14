@@ -104,29 +104,7 @@ deploy:
 	
 verify:
 	@echo "🔍 Verifying deployment..."
-	aws ssm send-command \
-		--instance-ids "$(EC2_INSTANCE_ID)" \
-		--document-name "AWS-RunShellScript" \
-		--parameters 'commands=[
-			"cd $(DEPLOY_PATH)",
-			"echo \"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\"",
-			"echo \"📝 Environment Configuration\"",
-			"echo \"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\"",
-			"cat .env",
-			"echo",
-			"echo \"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\"",
-			"echo \"📊 Container Status\"",
-			"echo \"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\"",
-			"sudo docker-compose ps",
-			"echo",
-			"echo \"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\"",
-			"echo \"🏥 Health Checks\"",
-			"echo \"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\"",
-			"curl -f http://localhost:3000/api/health && echo \"✅ App healthy\" || echo \"❌ App failed\"",
-			"curl -f http://localhost/health && echo \"✅ Nginx healthy\" || echo \"❌ Nginx failed\""
-		]' \
-		--region $(AWS_REGION) \
-		--output text
+	aws ssm send-command --instance-ids "$(EC2_INSTANCE_ID)" --document-name "AWS-RunShellScript" --parameters 'commands=["cd $(DEPLOY_PATH)","echo Environment Configuration","cat .env","echo","echo Container Status","sudo docker-compose ps","echo","echo Health Checks","curl -f http://localhost:3000/api/health && echo App healthy || echo App failed","curl -f http://localhost/health && echo Nginx healthy || echo Nginx failed"]' --region $(AWS_REGION) --output text
 
 up:
 	@echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
