@@ -28,9 +28,6 @@ pipelines:
             
             # Verify OIDC
             - make OICDcheck
-            
-            # Upload docker-compose.yml and Makefile to S3
-            - make upload-s3
 
       - step:
           name: Deploy & Validate (via AWS OIDC + SSM)

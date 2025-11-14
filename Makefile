@@ -78,45 +78,6 @@ OICDcheck:
 
 #for local, just run docker compose but for remote need to find a way to integrate the image without building them
 #push first and pull
-makefile.PHONY: lint build push upload-s3 deploy verify
-
-# ============================================
-# 变量定义（保持不变）
-# ============================================
-PROJECT_NAME := codetocloud
-DOCKER_REPO := codetocloud
-APP_TAG ?= $(shell git rev-parse --short HEAD)
-EC2_INSTANCE_ID ?= i-01a647dab0456420a
-AWS_REGION ?= ap-southeast-2
-S3_BUCKET ?= uat-artifacts-zihao
-S3_KEY := deployments/$(PROJECT_NAME)/docker-compose.yml
-DOCKER_USERZ ?= $(shell echo $$DOCKER_USERZ)
-DOCKER_PASSZ ?= $(shell echo $$DOCKER_PASSZ)
-DEPLOY_PATH := /opt/$(PROJECT_NAME)
-
-# ============================================
-# 构建和推送（保持不变）
-# ============================================
-lint:
-	@echo "🔍 Linting Dockerfiles..."
-	docker run --rm -v $$(pwd):/app hadolint/hadolint hadolint /app/app/Dockerfile
-	docker run --rm -v $$(pwd):/app hadolint/hadolint hadolint /app/deploy/nginx/Dockerfile.nginx
-
-build:
-	@echo "🔨 Building images with tag: $(APP_TAG)"
-	docker build -t $(DOCKER_USERZ)/$(DOCKER_REPO)-app:$(APP_TAG) -f app/Dockerfile ./app
-	docker build -t $(DOCKER_USERZ)/$(DOCKER_REPO)-nginx:$(APP_TAG) -f deploy/nginx/Dockerfile.nginx ./deploy/nginx
-	@echo "✅ Build complete!"
-
-login:
-	@echo "🔐 Logging in to Docker Hub..."
-	@docker login -u $(DOCKER_USERZ) -p $(DOCKER_PASSZ)
-
-push: login build
-	@echo "📦 Pushing images..."
-	docker push $(DOCKER_USERZ)/$(DOCKER_REPO)-app:$(APP_TAG)
-	docker push $(DOCKER_USERZ)/$(DOCKER_REPO)-nginx:$(APP_TAG)
-	@echo "✅ Push complete!"
 
 upload-s3:
 	@echo "📤 Uploading files to S3..."
@@ -126,7 +87,7 @@ upload-s3:
 	@echo "  - s3://$(S3_BUCKET)/$(S3_COMPOSE)"
 	@echo "  - s3://$(S3_BUCKET)/$(S3_MAKEFILE)"
 
-deploy: push upload-s3
+deploy: upload-s3
 	@echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 	@echo "🚀 Deploying to EC2"
 	@echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
