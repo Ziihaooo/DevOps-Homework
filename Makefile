@@ -73,8 +73,6 @@ OICDcheck:
 
 	@echo "OIDC test successful — AWS access verified!"
 
-#this is use for downloading compose in ec2 I cant find a way
-
 deploy:
 	@echo "🚀 Deploying $(PROJECT_NAME) to EC2 via SSM..."
 	aws ssm send-command \
