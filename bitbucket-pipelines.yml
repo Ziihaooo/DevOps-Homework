@@ -18,21 +18,6 @@ pipelines:
             - make push
 
       - step:
-          name: Upload Config to S3
-          oidc: true
-          script:
-            - apk add --no-cache aws-cli make
-            - export AWS_ROLE_ARN="arn:aws:iam::314146318322:role/PIPELINEOIDCROLE_ZIHAO"
-            - export AWS_WEB_IDENTITY_TOKEN_FILE="/tmp/bb.token"
-            - export AWS_REGION="ap-southeast-2"
-            
-            # Verify OIDC
-            - make OICDcheck
-            
-            # Upload docker-compose.yml and Makefile to S3
-            - make upload-s3
-
-      - step:
           name: Deploy & Validate (via AWS OIDC + SSM)
           oidc: true
           script:
@@ -40,11 +25,14 @@ pipelines:
             - export AWS_ROLE_ARN="arn:aws:iam::314146318322:role/PIPELINEOIDCROLE_ZIHAO"
             - export AWS_WEB_IDENTITY_TOKEN_FILE="/tmp/bb.token"
             - export AWS_REGION="ap-southeast-2"
-            - export DOCKER_BUILDKIT=0
             - export DOCKER_USERZ=$DOCKER_USERZ
             
-            # AC6 – Deploy via SSM to EC2 (downloads from S3, runs make up)
-            - make deploy
+            # 保存 OIDC token
+            - echo $BITBUCKET_STEP_OIDC_TOKEN > /tmp/bb.token
             
-            # AC3–AC5 – Verify Nginx & Health
+            # 验证、上传、部署
+            - make OICDcheck
+            - make upload-s3
+            - make deploy
             - make verify
+       
