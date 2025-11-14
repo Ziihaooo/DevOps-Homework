@@ -93,17 +93,8 @@ upload-s3:
 	@echo "  - s3://$(S3_BUCKET)/$(S3_DOCKER_COMPOSE)"
 
 deploy:
-	@echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-	@echo "🚀 Deploying to EC2"
-	@echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-	@echo "Project: $(PROJECT_NAME)"
-	@echo "Tag: $(APP_TAG)"
-	@echo "Instance: $(EC2_INSTANCE_ID)"
-	@echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-	aws ssm send-command --region $(AWS_REGION) --instance-ids "$(EC2_INSTANCE_ID)" --document-name "AWS-RunShellScript" --comment "Deploy $(PROJECT_NAME)-$(APP_TAG)" --parameters 'commands=["set -e","echo === Installing Docker & Make ===","sudo yum install -y docker make","sudo systemctl enable docker","sudo systemctl start docker","echo === Installing docker-compose from S3 ===","aws s3 cp s3://$(S3_BUCKET)/$(S3_DOCKER_COMPOSE) /tmp/docker-compose --region $(AWS_REGION)","sudo mv /tmp/docker-compose /usr/local/bin/docker-compose","sudo chmod +x /usr/local/bin/docker-compose","docker-compose --version","echo === Preparing deployment ===","sudo mkdir -p /opt/$(PROJECT_NAME)","echo === Downloading from S3 ===","aws s3 cp s3://$(S3_BUCKET)/$(S3_COMPOSE) /opt/$(PROJECT_NAME)/docker-compose.yml --region $(AWS_REGION)","aws s3 cp s3://$(S3_BUCKET)/$(S3_MAKEFILE) /opt/$(PROJECT_NAME)/Makefile --region $(AWS_REGION)","echo === Creating .env ===","echo PROJECT_NAME=$(PROJECT_NAME) | sudo tee /opt/$(PROJECT_NAME)/.env","echo DOCKER_USERZ=$(DOCKER_USERZ) | sudo tee -a /opt/$(PROJECT_NAME)/.env","echo DOCKER_REPO=$(DOCKER_REPO) | sudo tee -a /opt/$(PROJECT_NAME)/.env","echo APP_TAG=$(APP_TAG) | sudo tee -a /opt/$(PROJECT_NAME)/.env","echo === Verifying files ===","ls -lh /opt/$(PROJECT_NAME)/","cat /opt/$(PROJECT_NAME)/.env","echo === Running deployment ===","cd /opt/$(PROJECT_NAME) && sudo make up","echo === Deployment Complete ==="]' --region $(AWS_REGION) --output text
-	@echo ""
-	@echo "✅ Deployment initiated!"
-	@echo "💡 Run 'make verify' to check status"
+	aws ssm send-command --region $(AWS_REGION) --instance-ids "$(EC2_INSTANCE_ID)" --document-name "AWS-RunShellScript" --comment "Deploy $(PROJECT_NAME)-$(APP_TAG)" --parameters 'commands=["set -e","echo ====== Installing Docker and Make ======","sudo yum update -y || true","sudo yum install -y docker make","sudo systemctl enable docker","sudo systemctl start docker","echo ====== Installing docker-compose ======","aws s3 cp s3://$(S3_BUCKET)/$(S3_DOCKER_COMPOSE) /tmp/docker-compose --region $(AWS_REGION)","sudo mv /tmp/docker-compose /usr/local/bin/docker-compose","sudo chmod +x /usr/local/bin/docker-compose","docker-compose --version || echo docker-compose missing","echo ====== Preparing deployment folder ======","sudo mkdir -p /opt/$(PROJECT_NAME)","echo ====== Downloading compose & makefile ======","aws s3 cp s3://$(S3_BUCKET)/$(S3_COMPOSE) /opt/$(PROJECT_NAME)/docker-compose.yml --region $(AWS_REGION)","aws s3 cp s3://$(S3_BUCKET)/$(S3_MAKEFILE) /opt/$(PROJECT_NAME)/Makefile --region $(AWS_REGION)","echo ====== Creating .env ======","echo PROJECT_NAME=$(PROJECT_NAME) | sudo tee /opt/$(PROJECT_NAME)/.env","echo DOCKER_USERZ=$(DOCKER_USERZ) | sudo tee -a /opt/$(PROJECT_NAME)/.env","echo DOCKER_REPO=$(DOCKER_REPO) | sudo tee -a /opt/$(PROJECT_NAME)/.env","echo APP_TAG=$(APP_TAG) | sudo tee -a /opt/$(PROJECT_NAME)/.env","echo ====== Verifying files ======","ls -lh /opt/$(PROJECT_NAME)/","cat /opt/$(PROJECT_NAME)/.env","echo ====== Running make up ======","cd /opt/$(PROJECT_NAME) && sudo make up","echo ====== Deployment Complete ======"]' --output text
+
 
 verify:
 	@echo "🔍 Verifying deployment..."
