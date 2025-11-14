@@ -87,7 +87,7 @@ upload-s3:
 	@echo "  - s3://$(S3_BUCKET)/$(S3_COMPOSE)"
 	@echo "  - s3://$(S3_BUCKET)/$(S3_MAKEFILE)"
 
-deploy: upload-s3
+deploy:
 	@echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 	@echo "🚀 Deploying to EC2"
 	@echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
