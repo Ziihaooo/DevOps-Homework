@@ -100,8 +100,8 @@ verify:
 	@PUBLIC_IP=$$(aws ec2 describe-instances --instance-ids $(EC2_INSTANCE_ID) --query "Reservations[0].Instances[0].PublicIpAddress" --output text --region $(AWS_REGION)); \
 	echo "🔍 Verifying deployment on $$PUBLIC_IP ..."; \
 	for i in $$(seq 1 30); do \
-		echo "Attempt $$i: checking http://$$PUBLIC_IP/health ..."; \
-		if curl -fsS "http://$$PUBLIC_IP/health"; then \
+		echo "Attempt $$i: checking http://$$PUBLIC_IP/api/health ..."; \
+		if curl -fsS "http://$$PUBLIC_IP/api/health"; then \
 			echo "✅ Deployment healthy!"; exit 0; \
 		fi; \
 		sleep 3; \
