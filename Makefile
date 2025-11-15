@@ -97,8 +97,16 @@ deploy:
 
 
 verify:
-	@echo "🔍 Verifying deployment..."
-	aws ssm send-command --instance-ids "$(EC2_INSTANCE_ID)" --document-name "AWS-RunShellScript" --parameters 'commands=["echo === Environment Configuration ===","cat /opt/$(PROJECT_NAME)/.env","echo === Container Status ===","sudo docker-compose -f /opt/$(PROJECT_NAME)/docker-compose.yml ps","echo === Health Checks ===","sleep 5","curl -f http://localhost:3000/api/health && echo App healthy || echo App failed","curl -f http://localhost/health && echo Nginx healthy || echo Nginx failed"]' --region $(AWS_REGION) --output text
+	@PUBLIC_IP=$$(aws ec2 describe-instances --instance-ids $(EC2_INSTANCE_ID) --query "Reservations[0].Instances[0].PublicIpAddress" --output text --region $(AWS_REGION)); \
+	echo "🔍 Verifying deployment on $$PUBLIC_IP ..."; \
+	for i in $$(seq 1 30); do \
+		echo "Attempt $$i: checking http://$$PUBLIC_IP/health ..."; \
+		if curl -fsS "http://$$PUBLIC_IP/health"; then \
+			echo "✅ Deployment healthy!"; exit 0; \
+		fi; \
+		sleep 3; \
+	done; \
+	echo "❌ Deployment did NOT become healthy in time."; exit 1
 
 up:
 	@echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
