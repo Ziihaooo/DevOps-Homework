@@ -1,4 +1,4 @@
-.PHONY: lint build login push OICDcheck upload-s3 deploy verify up down restart logs status cleanRetry
+.PHONY: lint build test-nginx login push OICDcheck upload-s3 deploy verify up down restart logs status cleanRetry
 #project name = container after you build 
 #docker repo = the name of the docker hub you want
 PROJECT_NAME := codetocloud
@@ -39,6 +39,10 @@ build:
 	docker build -t $(DOCKER_USERZ)/$(DOCKER_REPO)-app:$(APP_TAG) -f app/Dockerfile ./app
 	docker build -t $(DOCKER_USERZ)/$(DOCKER_REPO)-nginx:$(APP_TAG) -f deploy/nginx/Dockerfile.nginx ./deploy/nginx
 
+test-nginx:
+	@echo "🔍 Testing Nginx configuration (nginx -t)..."
+	@docker run --rm $(DOCKER_USERZ)/$(DOCKER_REPO)-nginx:$(APP_TAG) nginx -t
+	@echo "✅ Nginx config OK!"
 #<user>/<repo>:<tag>
 # as the only one who can push the image will only assigned to one exact docker hub
 # so the docker user must be fixed in the env
@@ -51,6 +55,7 @@ push: login
 	docker push $(DOCKER_USERZ)/$(DOCKER_REPO)-app:$(APP_TAG)
 	docker push $(DOCKER_USERZ)/$(DOCKER_REPO)-nginx:$(APP_TAG)
 	@echo "push successful"
+
 
 OICDcheck:
 	@echo "Testing Bitbucket OIDC connection to AWS..."

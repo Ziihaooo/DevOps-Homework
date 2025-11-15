@@ -14,6 +14,7 @@ pipelines:
             - export DOCKER_BUILDKIT=0
             # AC2 – Image published
             - make build
+            - make test-nginx
             - make login
             - make push
 
