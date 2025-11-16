@@ -39,6 +39,8 @@ build:
 	docker build -t $(DOCKER_USERZ)/$(DOCKER_REPO)-app:$(APP_TAG) -f app/Dockerfile ./app
 	docker build -t $(DOCKER_USERZ)/$(DOCKER_REPO)-nginx:$(APP_TAG) -f deploy/nginx/Dockerfile.nginx ./deploy/nginx
 
+#use nginx check the nginx image 
+#because this just check the nginx file which might contain app thing 
 test-nginx:
 	@echo "🔍 Testing Nginx configuration syntax (ignore upstream errors)..."
 	@docker run --rm $(DOCKER_USERZ)/$(DOCKER_REPO)-nginx:$(APP_TAG) \
@@ -88,6 +90,7 @@ OICDcheck:
 #for local, just run docker compose but for remote need to find a way to integrate the image without building them
 #push first and pull
 
+#upload minimum required file for ec2 to run make up correctly
 upload-s3:
 	@echo "📤 Uploading files to S3..."
 	aws s3 cp docker-compose.yml s3://$(S3_BUCKET)/$(S3_COMPOSE) --region $(AWS_REGION)
@@ -98,10 +101,17 @@ upload-s3:
 	@echo "  - s3://$(S3_BUCKET)/$(S3_MAKEFILE)"
 	@echo "  - s3://$(S3_BUCKET)/$(S3_DOCKER_COMPOSE)"
 
+
+#deploy first need to install docker and make for using
+#download docekr compose, makefile and docker compose yml from S3
+#create directory under opt (best practices) in ec2
+# write .env for runtime variables or using export in pipelines （this step can skip if your env define in makefile)
+# executes make up in ec2 to start containers  
 deploy:
 	aws ssm send-command --region $(AWS_REGION) --instance-ids "$(EC2_INSTANCE_ID)" --document-name "AWS-RunShellScript" --comment "Deploy $(PROJECT_NAME)-$(APP_TAG)" --parameters 'commands=["set -e","sudo yum update -y || true","sudo yum install -y docker make","sudo systemctl enable docker","sudo systemctl start docker","aws s3 cp s3://$(S3_BUCKET)/$(S3_DOCKER_COMPOSE) /tmp/docker-compose --region $(AWS_REGION)","sudo mv /tmp/docker-compose /usr/local/bin/docker-compose","sudo chmod +x /usr/local/bin/docker-compose","sudo mkdir -p /opt/$(PROJECT_NAME)","aws s3 cp s3://$(S3_BUCKET)/$(S3_COMPOSE) /opt/$(PROJECT_NAME)/docker-compose.yml --region $(AWS_REGION)","aws s3 cp s3://$(S3_BUCKET)/$(S3_MAKEFILE) /opt/$(PROJECT_NAME)/Makefile --region $(AWS_REGION)","echo PROJECT_NAME=$(PROJECT_NAME) | sudo tee /opt/$(PROJECT_NAME)/.env","echo DOCKER_USERZ=$(DOCKER_USERZ) | sudo tee -a /opt/$(PROJECT_NAME)/.env","echo DOCKER_REPO=$(DOCKER_REPO) | sudo tee -a /opt/$(PROJECT_NAME)/.env","echo APP_TAG=$(APP_TAG) | sudo tee -a /opt/$(PROJECT_NAME)/.env","cd /opt/$(PROJECT_NAME) && sudo make up"]' --output text
 
-
+#check multiple time to ensure the image is checked after building
+#from pipelines check them
 verify:
 	@PUBLIC_IP=$$(aws ec2 describe-instances --instance-ids $(EC2_INSTANCE_ID) --query "Reservations[0].Instances[0].PublicIpAddress" --output text --region $(AWS_REGION)); \
 	echo "🔍 Verifying deployment on $$PUBLIC_IP ..."; \
@@ -114,6 +124,8 @@ verify:
 	done; \
 	echo "❌ Deployment did NOT become healthy in time."; exit 1
 
+
+#stop old container and pull the image from docker hub and up them
 up:
 	@echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 	@echo "🚀 Starting Containers"
