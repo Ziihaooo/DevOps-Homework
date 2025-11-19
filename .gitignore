@@ -49,8 +49,10 @@ Thumbs.db
 *.wmv
 
 .terraform/
+.terraform/providers/registry.terraform.io/hashicorp/aws/6.21.0/linux_amd64/terraform-provider-aws_v6.21.0_x5
 terraform.tfstate
 terraform.tfstate.backup
 *.tfvars
 *.tfvars.json
 
+.terraform/
