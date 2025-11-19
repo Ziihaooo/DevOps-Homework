@@ -48,3 +48,9 @@ Thumbs.db
 *.mov
 *.wmv
 
+.terraform/
+terraform.tfstate
+terraform.tfstate.backup
+*.tfvars
+*.tfvars.json
+
