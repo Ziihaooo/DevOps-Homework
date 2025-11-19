@@ -1,3 +1,6 @@
 public_subnet_id = "subnet-0a05dfbfa9b02eb45"
+private_subnet_id = "subnet-089bf9a6ed97aad05"
+VPC_id = "vpc-0a775837570253930"
 ami_id = "ami-038013fbee7451346"
-private_route_table_id= "rtb-0f423cee4892a02e1"
+instance_type = "t2.micro"
+private_route_table_id= "rtb-036b577fd3a3d7b3c"

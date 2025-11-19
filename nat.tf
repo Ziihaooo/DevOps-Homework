@@ -21,11 +21,3 @@ resource "aws_eip" "nat" {
     Name = "Nat_eip"
   }
 }
-
-#after creating the nat, need to assign it to a vpc
-
-resource "aws_route" "private_nat_route" {
-  route_table_id         = var.12031203 
-  destination_cidr_block = "0.0.0.0/0"
-  nat_gateway_id         = aws_nat_gateway.NAT_gateway.id
-}

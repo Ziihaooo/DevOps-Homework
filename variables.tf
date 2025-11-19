@@ -1,4 +1,4 @@
-#------ NAT --------
+#------ public_subnet --------
 #for nat gateway
 variable "public_subnet_id"{
     description = "the id of the public subnet"
@@ -6,17 +6,23 @@ variable "public_subnet_id"{
     default = "subnet-0a05dfbfa9b02eb45"
 }
 
-#------ NAT --------
+#------ public_subnet --------
 
-#------ Route Tables -----
-variable "private_route_table_id"{
-    description = "the id of the private route table"
+#------ private subnet -------
+variable "private_subnet_id"{
+    description = "the id of the private subnet"
     type = string
-    default = "rtb-0f423cee4892a02e1"
+    default = "subnet-089bf9a6ed97aad05"
+}
+#------ private subnet -------
+
+#------ VPC -----
+variable "VPC_id"{
+    description = "the id of the sample vpc"
+    type = string
+    default = "vpc-0a775837570253930"
 }
 #------ Route Tables -----
-
-
 #using variables for decoupling 
 variable "ami_id"{
     description = "AMAZON MACHINE IMAGE for ec2"
