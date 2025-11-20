@@ -5,6 +5,7 @@ S3_BUCKET = zihao-app-artifacts
 S3_COMPOSE = docker-compose.yml
 S3_MAKEFILE = Makefile
 S3_DOCKER_COMPOSE = docker-compose
+SANITIZED_NAME := $(shell echo "$(PROJECT_NAME)" | tr A-Z a-z | tr '_' '-' | xargs)
 DOCKER_REPO ?= $(PROJECT_NAME)         
 DOCKER_USERZ ?= $(DOCKER_USER) 
 AWS_REGION ?=ap-southeast-2
