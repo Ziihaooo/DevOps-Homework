@@ -11,10 +11,12 @@ echo "APP_TAG:      $APP_TAG"
 echo "S3_BUCKET:    $S3_BUCKET"
 echo "AWS_REGION:   $AWS_REGION"
 
+echo "Updating system and installing dependencies"
 sudo yum update -y || true
 sudo yum install -y docker make awscli jq
 sudo systemctl enable docker
 sudo systemctl start docker
+echo "System update and dependency installation done"
 
 echo "create directory"
 sudo mkdir -p /opt/$PROJECT_NAME
