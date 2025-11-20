@@ -5,9 +5,6 @@ echo "━━━━━━━━━━━━━━━━━━━━━━━━�
 echo "   Starting Deployment"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
-#!/bin/bash
-set -euo pipefail
-
 PROJECT_NAME=$1
 DOCKER_USERZ=$2
 DOCKER_REPO=$3
