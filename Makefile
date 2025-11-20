@@ -5,7 +5,7 @@ S3_BUCKET = zihao-app-artifacts
 S3_COMPOSE = docker-compose.yml
 S3_MAKEFILE = Makefile
 S3_DOCKER_COMPOSE = docker-compose
-PROJECT_NAME ?= zihao_app_alb
+PROJECT_NAME ?= zihaoappalb
 DOCKER_REPO ?= $(PROJECT_NAME)         
 DOCKER_USERZ ?= $(DOCKER_USER) 
 AWS_REGION ?=ap-southeast-2
@@ -17,7 +17,7 @@ lint:
 	docker run --rm -v $$(pwd):/app hadolint/hadolint hadolint /app/app/Dockerfile
 
 build:
-	docker build -t $(DOCKER_USERZ)/zihao_app_alb-app:$(APP_TAG) -f app/Dockerfile ./app
+	docker build -t $(DOCKER_USERZ)/$(DOCKER_REPO)-app:$(APP_TAG) -f app/Dockerfile ./app
 
 login:
 	docker login -u $(DOCKER_USERZ) -p $(DOCKER_PASS)
