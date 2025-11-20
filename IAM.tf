@@ -57,13 +57,15 @@ resource "aws_iam_role" "pipeline_oidc_role" {
 }
 
 # ========= PIPELINE POLICY (WRITE TO oidc-test + READ deploy/outputs.json) =========
+# ========= PIPELINE POLICY (FULL ACCESS TO deploy/* AND oidc-test/*) =========
 resource "aws_iam_policy" "pipeline_s3_access" {
   name = "PipelineOIDCS3Access"
 
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
-      # --- Test folder (write allowed) ---
+
+      # --- 1. OIDC test folder (READ + WRITE) ---
       {
         Effect = "Allow"
         Action = [
@@ -85,10 +87,11 @@ resource "aws_iam_policy" "pipeline_s3_access" {
         }
       },
 
-      # --- NEW: Read deploy/ (needed for outputs.json) ---
+      # --- 2. deploy folder (READ + WRITE) ---
       {
         Effect = "Allow"
         Action = [
+          "s3:PutObject",
           "s3:GetObject"
         ]
         Resource = "${aws_s3_bucket.app_artifacts.arn}/deploy/*"
@@ -105,6 +108,7 @@ resource "aws_iam_policy" "pipeline_s3_access" {
           }
         }
       }
+
     ]
   })
 }
