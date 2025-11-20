@@ -86,7 +86,7 @@ deploy:
 	  --instance-ids "$(EC2_INSTANCE_ID)" \
 	  --document-name "AWS-RunShellScript" \
 	  --comment "Deploy $(PROJECT_NAME)-$(APP_TAG)" \
-	  --parameters "{\"commands\":[\"bash /tmp/deploy.sh '$(PROJECT_NAME)' '$(DOCKER_USERZ)' '$(DOCKER_REPO)' '$(APP_TAG)' '$(S3_BUCKET)' 'ap-southeast-2' '123456'\"]}" \
+	  --parameters "{\"commands\":[\"bash /tmp/deploy.sh \\\"$(PROJECT_NAME)\\\" \\\"$(DOCKER_USERZ)\\\" \\\"$(DOCKER_REPO)\\\" \\\"$(APP_TAG)\\\" \\\"$(S3_BUCKET)\\\" \\\"ap-southeast-2\\\" \\\"123456\\\"\"]}" \
 	  --output text
 
 #stop old container and pull the image from docker hub and up them
