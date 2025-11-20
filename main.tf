@@ -45,14 +45,6 @@ resource "aws_security_group" "private_sg" {
   #chatgpt said SG is a vpc based resource so need to assign it to a vpc
   vpc_id = var.vpc_id
 
-  # No Inbound Rules (SSM does not need inbound)
-  ingress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = []
-  }
-
   # Outbound: Allow EC2 to connect to AWS SSM endpoints
   egress {
     from_port   = 0
