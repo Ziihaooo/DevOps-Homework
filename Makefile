@@ -53,13 +53,13 @@ OICDcheck:
 
 upload-s3:
 	@echo "📤 Uploading files to S3..."
-	aws s3 cp docker-compose.yml s3://$(S3_BUCKET)/$(S3_COMPOSE) --region $(AWS_REGION)
-	aws s3 cp Makefile s3://$(S3_BUCKET)/$(S3_MAKEFILE) --region $(AWS_REGION)
-	aws s3 cp docker-compose s3://$(S3_BUCKET)/$(S3_DOCKER_COMPOSE) --region $(AWS_REGION)
+	aws s3 cp docker-compose.yml s3://$(S3_BUCKET)/deploy/$(S3_COMPOSE) --region $(AWS_REGION)
+	aws s3 cp Makefile s3://$(S3_BUCKET)/deploy/$(S3_MAKEFILE) --region $(AWS_REGION)
+	aws s3 cp docker-compose s3://$(S3_BUCKET)/deploy/$(S3_DOCKER_COMPOSE) --region $(AWS_REGION)
 	@echo "✅ Uploaded:"
-	@echo "  - s3://$(S3_BUCKET)/$(S3_COMPOSE)"
-	@echo "  - s3://$(S3_BUCKET)/$(S3_MAKEFILE)"
-	@echo "  - s3://$(S3_BUCKET)/$(S3_DOCKER_COMPOSE)"
+	@echo "  - s3://$(S3_BUCKET)/deploy/$(S3_COMPOSE)"
+	@echo "  - s3://$(S3_BUCKET)/deploy/$(S3_MAKEFILE)"
+	@echo "  - s3://$(S3_BUCKET)/deploy/$(S3_DOCKER_COMPOSE)"
 
 deploy:
 	aws ssm send-command --region $(AWS_REGION) --instance-ids "$(EC2_INSTANCE_ID)" --document-name "AWS-RunShellScript" --comment "Deploy $(PROJECT_NAME)-$(APP_TAG)" --parameters '{"commands":["set -e","sudo yum update -y || true","sudo yum install -y docker make awscli","sudo systemctl enable docker","sudo systemctl start docker","aws s3 cp s3://$(S3_BUCKET)/$(S3_DOCKER_COMPOSE) /usr/local/bin/docker-compose --region $(AWS_REGION)","sudo chmod +x /usr/local/bin/docker-compose","sudo mkdir -p /opt/$(PROJECT_NAME)","aws s3 cp s3://$(S3_BUCKET)/$(S3_COMPOSE) /opt/$(PROJECT_NAME)/docker-compose.yml --region $(AWS_REGION)","aws s3 cp s3://$(S3_BUCKET)/$(S3_MAKEFILE) /opt/$(PROJECT_NAME)/Makefile --region $(AWS_REGION)","echo PROJECT_NAME=$(PROJECT_NAME) | sudo tee /opt/$(PROJECT_NAME)/.env","echo DOCKER_USERZ=$(DOCKER_USERZ) | sudo tee -a /opt/$(PROJECT_NAME)/.env","echo DOCKER_REPO=$(DOCKER_REPO) | sudo tee -a /opt/$(PROJECT_NAME)/.env","echo APP_TAG=$(APP_TAG) | sudo tee -a /opt/$(PROJECT_NAME)/.env","cd /opt/$(PROJECT_NAME) && sudo make up"]}' --output text
