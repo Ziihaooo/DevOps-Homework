@@ -81,8 +81,7 @@ upload-s3:
 	@echo "  - s3://$(S3_BUCKET)/deploy/deploy.sh"
 
 deploy:
-	aws ssm send-command --region ap-southeast-2 --instance-ids "$(EC2_INSTANCE_ID)" --document-name "AWS-RunShellScript" --comment "Deploy $(PROJECT_NAME)-$(APP_TAG)" --parameters "{\"commands\":[\"set -e\",\"export PROJECT_NAME=$(PROJECT_NAME)\",\"export DOCKER_USERZ=$(DOCKER_USERZ)\",\"export DOCKER_REPO=$(DOCKER_REPO)\",\"export APP_TAG=$(APP_TAG)\",\"export S3_BUCKET=$(S3_BUCKET)\",\"export AWS_REGION=ap-southeast-2\",\"aws s3 cp s3://$(S3_BUCKET)/deploy/deploy.sh /tmp/deploy.sh --region ap-southeast-2\",\"chmod +x /tmp/deploy.sh\",\"/tmp/deploy.sh\"]}" --output text
-
+	aws ssm send-command --parameters "{\"commands\":[\"bash /tmp/deploy.sh $(PROJECT_NAME) $(DOCKER_USERZ) $(DOCKER_REPO) $(APP_TAG) $(S3_BUCKET) ap-southeast-2\"]}"
 #stop old container and pull the image from docker hub and up them
 up:
 	@echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"

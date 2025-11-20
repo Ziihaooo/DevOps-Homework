@@ -5,12 +5,23 @@ echo "━━━━━━━━━━━━━━━━━━━━━━━━�
 echo "   Starting Deployment"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
-echo "PROJECT_NAME: $PROJECT_NAME"
-echo "DOCKER_USERZ: $DOCKER_USERZ"
-echo "DOCKER_REPO:  $DOCKER_REPO"
-echo "APP_TAG:      $APP_TAG"
-echo "S3_BUCKET:    $S3_BUCKET"
-echo "AWS_REGION:   $AWS_REGION"
+#!/bin/bash
+set -euo pipefail
+
+PROJECT_NAME=$1
+DOCKER_USERZ=$2
+DOCKER_REPO=$3
+APP_TAG=$4
+S3_BUCKET=$5
+AWS_REGION=$6
+
+export PROJECT_NAME
+export DOCKER_USERZ
+export DOCKER_REPO
+export APP_TAG
+export S3_BUCKET
+export AWS_REGION
+
 
 sudo yum update -y || true
 sudo yum install -y docker make awscli jq
