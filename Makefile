@@ -17,7 +17,7 @@ lint:
 	docker run --rm -v $$(pwd):/app hadolint/hadolint hadolint /app/app/Dockerfile
 
 build:
-	docker build -t $(DOCKER_USERZ)/$(DOCKER_REPO)-app:$(APP_TAG) -f app/Dockerfile ./app
+	docker build -t $(DOCKER_USERZ)/zihao_app_alb-app:$(APP_TAG) -f app/Dockerfile ./app
 
 login:
 	docker login -u $(DOCKER_USERZ) -p $(DOCKER_PASS)
