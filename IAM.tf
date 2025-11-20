@@ -56,8 +56,9 @@ resource "aws_iam_role" "pipeline_oidc_role" {
   })
 }
 
-# ========= PIPELINE POLICY (WRITE TO oidc-test + READ deploy/outputs.json) =========
-# ========= PIPELINE POLICY (FULL ACCESS TO deploy/* AND oidc-test/*) =========
+data "aws_caller_identity" "current" {}
+
+# ========= PIPELINE POLICY =========
 resource "aws_iam_policy" "pipeline_s3_access" {
   name = "PipelineOIDCS3Access"
 
@@ -65,50 +66,40 @@ resource "aws_iam_policy" "pipeline_s3_access" {
     Version = "2012-10-17"
     Statement = [
 
-      # --- 1. OIDC test folder (READ + WRITE) ---
+      # --- S3 deploy & oidc-test folders ---
       {
-        Effect = "Allow"
-        Action = [
-          "s3:PutObject",
-          "s3:GetObject"
-        ]
+        Effect = "Allow",
+        Action = ["s3:PutObject","s3:GetObject"],
         Resource = "${aws_s3_bucket.app_artifacts.arn}/oidc-test/*"
       },
       {
-        Effect = "Allow"
-        Action = [
-          "s3:ListBucket"
-        ]
-        Resource = aws_s3_bucket.app_artifacts.arn
-        Condition = {
-          StringLike = {
-            "s3:prefix" = "oidc-test/*"
-          }
-        }
+        Effect = "Allow",
+        Action = ["s3:ListBucket"],
+        Resource = aws_s3_bucket.app_artifacts.arn,
+        Condition = { StringLike = { "s3:prefix" = "oidc-test/*" } }
       },
 
-      # --- 2. deploy folder (READ + WRITE) ---
       {
-        Effect = "Allow"
-        Action = [
-          "s3:PutObject",
-          "s3:GetObject"
-        ]
+        Effect = "Allow",
+        Action = ["s3:PutObject","s3:GetObject"],
         Resource = "${aws_s3_bucket.app_artifacts.arn}/deploy/*"
       },
       {
-        Effect = "Allow"
-        Action = [
-          "s3:ListBucket"
-        ]
-        Resource = aws_s3_bucket.app_artifacts.arn
-        Condition = {
-          StringLike = {
-            "s3:prefix" = "deploy/*"
-          }
-        }
-      }
+        Effect = "Allow",
+        Action = ["s3:ListBucket"],
+        Resource = aws_s3_bucket.app_artifacts.arn,
+        Condition = { StringLike = { "s3:prefix" = "deploy/*" } }
+      },
 
+      # --- SSM SendCommand ---
+      {
+        Effect = "Allow",
+        Action = ["ssm:SendCommand"],
+        Resource = [
+          "arn:aws:ssm:ap-southeast-2::document/AWS-RunShellScript",
+          "arn:aws:ec2:ap-southeast-2:${data.aws_caller_identity.current.account_id}:instance/*"
+        ]
+      }
     ]
   })
 }
