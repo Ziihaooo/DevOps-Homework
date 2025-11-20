@@ -21,6 +21,17 @@ echo "System update and dependency installation done"
 echo "create directory"
 sudo mkdir -p /opt/$PROJECT_NAME
 echo "create directory done"
+
+echo "create env file"
+cat <<EOF | sudo tee /opt/$PROJECT_NAME/.env
+PROJECT_NAME=$PROJECT_NAME
+DOCKER_USERZ=$DOCKER_USERZ
+DOCKER_REPO=$DOCKER_REPO
+APP_TAG=$APP_TAG
+S3_BUCKET=$S3_BUCKET
+AWS_REGION=$AWS_REGION
+EOF
+echo "create env file done"
 # fetch artifacts
 echo "fetch artifacts"
 aws s3 cp s3://$S3_BUCKET/deploy/docker-compose /usr/local/bin/docker-compose --region $AWS_REGION
