@@ -1,6 +1,5 @@
 #!/bin/bash
-set -euo pipefail
-
+set -xeuo pipefail
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "   Starting Deployment"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━"
