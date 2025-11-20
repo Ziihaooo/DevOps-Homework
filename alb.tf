@@ -1,13 +1,13 @@
 resource "aws_lb" "app_alb" {
   name               = "zihao-app-alb"
-  internal           = false      # Internet-facing ALB
+  internal           = false # Internet-facing ALB
   load_balancer_type = "application"
   security_groups    = [aws_security_group.alb_sg.id]
 
   # Your real Public Subnets
   subnets = [
-    "subnet-0a05dfbfa9b02eb45",  # ap-southeast-2a public subnet
-    "subnet-044bb7e2c10d0b1ee"   # ap-southeast-2c public subnet
+    "subnet-0a05dfbfa9b02eb45", # ap-southeast-2a public subnet
+    "subnet-044bb7e2c10d0b1ee"  # ap-southeast-2c public subnet
   ]
 
   idle_timeout = 60
@@ -80,6 +80,6 @@ resource "aws_lb_listener" "http" {
 
 resource "aws_lb_target_group_attachment" "ec2_attach" {
   target_group_arn = aws_lb_target_group.app_tg.arn
-  target_id = aws_instance.terraform_ec2.id
+  target_id        = aws_instance.terraform_ec2.id
   port             = 3000
 }

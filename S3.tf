@@ -3,7 +3,7 @@
 #the S3 bucket for uploading can be created by terraform
 resource "aws_s3_bucket" "app_artifacts" {
   bucket        = "zihao-app-artifacts"
-  force_destroy = true   # allows terraform destroy without errors
+  force_destroy = true # allows terraform destroy without errors
 
   tags = {
     Name    = "zihao-app-artifacts"
@@ -13,16 +13,6 @@ resource "aws_s3_bucket" "app_artifacts" {
 }
 
 resource "aws_s3_bucket_public_access_block" "app_artifacts" {
-  bucket = aws_s3_bucket.app_artifacts.id
-
-  block_public_acls       = true
-  block_public_policy     = true
-  ignore_public_acls      = true
-  restrict_public_buckets = true
-}
-
-# Block public access (安全最佳实践)
-resource "aws_s3_bucket_public_access_block" "block" {
   bucket = aws_s3_bucket.app_artifacts.id
 
   block_public_acls       = true

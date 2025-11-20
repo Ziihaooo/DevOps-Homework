@@ -1,0 +1,42 @@
+image: docker:24
+
+pipelines:
+  branches:
+    DEVOPSOCT-51:
+      - step:
+          name: Lint & Build & Push
+          services:
+            - docker
+          script:
+            - apk add --no-cache make git
+            - make lint
+            - export DOCKER_BUILDKIT=0
+            - make build
+            - make login
+            - make push
+
+      - step:
+          name: Deploy & Validate (via AWS OIDC + SSM)
+          oidc: true
+          script:
+            - apk add --no-cache aws-cli make curl jq
+
+            # Export AWS credentials for OIDC
+            - export AWS_ROLE_ARN="arn:aws:iam::314146318322:role/PipelineOIDCRole"
+            - export AWS_WEB_IDENTITY_TOKEN_FILE="/tmp/bb.token"
+            - export AWS_REGION="ap-southeast-2"
+            - echo $BITBUCKET_STEP_OIDC_TOKEN > /tmp/bb.token
+
+            # Load values from Terraform state
+            - aws s3 cp s3://terraforms3-zihao/dev/terraform/zihao/terraform.tfstate tfstate.json
+            - export EC2_INSTANCE_ID=$(jq -r '.outputs.ec2_id.value' tfstate.json)
+            - export ALB_DNS=$(jq -r '.outputs.alb_dns_name.value' tfstate.json)
+
+            # Pass through your docker username from repo variable
+            - export DOCKER_USERZ=$DOCKER_USERZ
+
+            # Run CI/CD workflow
+            - make OICDcheck
+            - make upload-s3
+            - make deploy
+            - make verify

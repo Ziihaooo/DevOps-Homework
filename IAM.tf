@@ -28,19 +28,11 @@ resource "aws_iam_instance_profile" "ssm_profile" {
 }
 
 #OIDC
-#the url need to change
-resource "aws_iam_openid_connect_provider" "bitbucket" {
+data "aws_iam_openid_connect_provider" "bitbucket" {
   url = "https://api.bitbucket.org/2.0/workspaces/distinctioncoding/pipelines-config/identity/oidc"
-
-  client_id_list = [
-    "ari:cloud:bitbucket::workspace/4819ba2a-d033-41a1-87c5-3988f84c0b16"
-  ]
-
-  thumbprint_list = [
-    "6938fd4d98bab03faadb97b34396831e3780aea1"
-  ]
 }
 
+#the url need to change
 resource "aws_iam_role" "pipeline_oidc_role" {
   name = "PipelineOIDCRole"
 
@@ -50,11 +42,11 @@ resource "aws_iam_role" "pipeline_oidc_role" {
       {
         Effect = "Allow"
         Principal = {
-          Federated = aws_iam_openid_connect_provider.bitbucket.arn
+          Federated = data.aws_iam_openid_connect_provider.bitbucket.arn
         }
         Action = "sts:AssumeRoleWithWebIdentity"
         Condition = {
-          ForAnyValue:StringEquals = {
+          "ForAnyValue:StringEquals" = {
             "api.bitbucket.org/2.0/workspaces/distinctioncoding/pipelines-config/identity/oidc:aud" = [
               "ari:cloud:bitbucket::workspace/4819ba2a-d033-41a1-87c5-3988f84c0b16"
             ]
@@ -95,7 +87,7 @@ resource "aws_iam_policy" "pipeline_s3_access" {
   })
 }
 
-resource "aws_iam_role_policy_attachment" "pipeline_attach_s3" { 
-  role       = aws_iam_role.pipeline_oidc_role.name 
-  policy_arn = aws_iam_policy.pipeline_s3_access.arn 
+resource "aws_iam_role_policy_attachment" "pipeline_attach_s3" {
+  role       = aws_iam_role.pipeline_oidc_role.name
+  policy_arn = aws_iam_policy.pipeline_s3_access.arn
 }
