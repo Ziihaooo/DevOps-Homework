@@ -20,19 +20,20 @@ pipelines:
           oidc: true
           script:
             - apk add --no-cache aws-cli make curl jq
-
             # Export AWS credentials for OIDC
             - export AWS_ROLE_ARN="arn:aws:iam::314146318322:role/PipelineOIDCRole"
             - export AWS_WEB_IDENTITY_TOKEN_FILE="/tmp/bb.token"
             - export AWS_REGION="ap-southeast-2"
             - echo $BITBUCKET_STEP_OIDC_TOKEN > /tmp/bb.token
 
-            # Load values from Terraform state
-            - aws s3 cp s3://terraform-outputs-zihao/outputs.json outputs.json
-            - export EC2_INSTANCE_ID=$(jq -r '.outputs.ec2_id.value' tfstate.json)
-            - export ALB_DNS=$(jq -r '.outputs.alb_dns_name.value' tfstate.json)
+            # Load values from Terraform outputs.json
+            - aws s3 cp s3://zihao-app-artifacts/deploy/outputs.json outputs.json
 
-            # Pass through your docker username from repo variable
+            # Parse Terraform outputs
+            - export EC2_INSTANCE_ID=$(jq -r '.ec2_id.value' outputs.json)
+            - export ALB_DNS=$(jq -r '.alb_dns_name.value' outputs.json)
+
+            # Pass through your docker username
             - export DOCKER_USERZ=$DOCKER_USERZ
 
             # Run CI/CD workflow
