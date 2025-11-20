@@ -1,4 +1,4 @@
-#create the role with aws ec2 service
+# ========= EC2 SSM ROLE =========
 resource "aws_iam_role" "ssm_role" {
   name = "EC2-SSM-Role"
 
@@ -15,24 +15,23 @@ resource "aws_iam_role" "ssm_role" {
     ]
   })
 }
-#attach the SSMMANAGED policy to the role created above
+
 resource "aws_iam_role_policy_attachment" "ssm_core" {
   role       = aws_iam_role.ssm_role.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
 }
 
-#need this for later attaching with ec2
 resource "aws_iam_instance_profile" "ssm_profile" {
   name = "EC2-SSM-InstanceProfile"
   role = aws_iam_role.ssm_role.name
 }
 
-#OIDC
+# ========= BITBUCKET OIDC PROVIDER =========
 data "aws_iam_openid_connect_provider" "bitbucket" {
   url = "https://api.bitbucket.org/2.0/workspaces/distinctioncoding/pipelines-config/identity/oidc"
 }
 
-#the url need to change
+# ========= PIPELINE ROLE =========
 resource "aws_iam_role" "pipeline_oidc_role" {
   name = "PipelineOIDCRole"
 
@@ -57,12 +56,14 @@ resource "aws_iam_role" "pipeline_oidc_role" {
   })
 }
 
+# ========= PIPELINE POLICY (WRITE TO oidc-test + READ deploy/outputs.json) =========
 resource "aws_iam_policy" "pipeline_s3_access" {
   name = "PipelineOIDCS3Access"
 
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
+      # --- Test folder (write allowed) ---
       {
         Effect = "Allow"
         Action = [
@@ -80,6 +81,27 @@ resource "aws_iam_policy" "pipeline_s3_access" {
         Condition = {
           StringLike = {
             "s3:prefix" = "oidc-test/*"
+          }
+        }
+      },
+
+      # --- NEW: Read deploy/ (needed for outputs.json) ---
+      {
+        Effect = "Allow"
+        Action = [
+          "s3:GetObject"
+        ]
+        Resource = "${aws_s3_bucket.app_artifacts.arn}/deploy/*"
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "s3:ListBucket"
+        ]
+        Resource = aws_s3_bucket.app_artifacts.arn
+        Condition = {
+          StringLike = {
+            "s3:prefix" = "deploy/*"
           }
         }
       }
