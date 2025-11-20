@@ -86,7 +86,7 @@ deploy:
 	  --instance-ids "$(EC2_INSTANCE_ID)" \
 	  --document-name "AWS-RunShellScript" \
 	  --comment "Deploy $(PROJECT_NAME)-$(APP_TAG)" \
-	  --parameters "{\"commands\":[\"aws s3 cp s3://$(S3_BUCKET)/deploy/deploy.sh /tmp/deploy.sh --region ap-southeast-2; chmod +x /tmp/deploy.sh; export PROJECT_NAME=$(PROJECT_NAME); export DOCKER_USERZ=$(DOCKER_USERZ); export DOCKER_REPO=$(DOCKER_REPO); export APP_TAG=$(APP_TAG); export S3_BUCKET=$(S3_BUCKET); export AWS_REGION=ap-southeast-2; bash /tmp/deploy.sh\"]]}" \
+	  --parameters "{\"commands\":[\"aws s3 cp s3://$(S3_BUCKET)/deploy/deploy.sh /tmp/deploy.sh --region ap-southeast-2; chmod +x /tmp/deploy.sh; export PROJECT_NAME=$(PROJECT_NAME); export DOCKER_USERZ=$(DOCKER_USERZ); export DOCKER_REPO=$(DOCKER_REPO); export APP_TAG=$(APP_TAG); export S3_BUCKET=$(S3_BUCKET); export AWS_REGION=ap-southeast-2; bash /tmp/deploy.sh\"]}" \
 	  --output text
 
 up:
