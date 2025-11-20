@@ -16,6 +16,7 @@ sudo yum install -y docker make awscli jq
 sudo systemctl enable docker
 sudo systemctl start docker
 
+echo "create directory"
 sudo mkdir -p /opt/$PROJECT_NAME
 
 # fetch artifacts
