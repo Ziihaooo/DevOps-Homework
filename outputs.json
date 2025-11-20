@@ -1,0 +1,62 @@
+{
+  "alb_arn": {
+    "sensitive": false,
+    "type": "string",
+    "value": "arn:aws:elasticloadbalancing:ap-southeast-2:314146318322:loadbalancer/app/zihao-app-alb/cc7ab319a8e40649"
+  },
+  "alb_dns_name": {
+    "sensitive": false,
+    "type": "string",
+    "value": "zihao-app-alb-1340695002.ap-southeast-2.elb.amazonaws.com"
+  },
+  "alb_listener_arn": {
+    "sensitive": false,
+    "type": "string",
+    "value": "arn:aws:elasticloadbalancing:ap-southeast-2:314146318322:listener/app/zihao-app-alb/cc7ab319a8e40649/8bae61656c94a2b6"
+  },
+  "alb_target_group_arn": {
+    "sensitive": false,
+    "type": "string",
+    "value": "arn:aws:elasticloadbalancing:ap-southeast-2:314146318322:targetgroup/zihao-app-tg/c6f14333b81ea6a9"
+  },
+  "alb_zone_id": {
+    "sensitive": false,
+    "type": "string",
+    "value": "Z1GM3OXH4ZPM65"
+  },
+  "artifact_bucket_arn": {
+    "sensitive": false,
+    "type": "string",
+    "value": "arn:aws:s3:::zihao-app-artifacts"
+  },
+  "artifact_bucket_name": {
+    "sensitive": false,
+    "type": "string",
+    "value": "zihao-app-artifacts"
+  },
+  "ec2_id": {
+    "sensitive": false,
+    "type": "string",
+    "value": "i-0807d57fb8794ef62"
+  },
+  "ec2_private_ip": {
+    "sensitive": false,
+    "type": "string",
+    "value": "10.0.0.141"
+  },
+  "instance_profile": {
+    "sensitive": false,
+    "type": "string",
+    "value": "EC2-SSM-InstanceProfile"
+  },
+  "nat_gateway_id": {
+    "sensitive": false,
+    "type": "string",
+    "value": "nat-02ba12a7c9b5cc451"
+  },
+  "private_route_table_id": {
+    "sensitive": false,
+    "type": "string",
+    "value": "rtb-07b444b46c9b13630"
+  }
+}

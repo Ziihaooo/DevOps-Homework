@@ -28,7 +28,7 @@ pipelines:
             - echo $BITBUCKET_STEP_OIDC_TOKEN > /tmp/bb.token
 
             # Load values from Terraform state
-            - aws s3 cp s3://terraforms3-zihao/dev/terraform/zihao/terraform.tfstate tfstate.json
+            - aws s3 cp s3://terraform-outputs-zihao/outputs.json outputs.json
             - export EC2_INSTANCE_ID=$(jq -r '.outputs.ec2_id.value' tfstate.json)
             - export ALB_DNS=$(jq -r '.outputs.alb_dns_name.value' tfstate.json)
 
