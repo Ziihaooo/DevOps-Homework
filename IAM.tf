@@ -21,7 +21,11 @@ resource "aws_iam_role_policy_attachment" "ssm_core" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
 }
 
-# EC2 needs S3 Read (fix for 403)
+resource "aws_iam_instance_profile" "ssm_profile" {
+  name = "EC2-SSM-InstanceProfile"
+  role = aws_iam_role.ssm_role.name
+}
+
 resource "aws_iam_role_policy" "ssm_ec2_s3_read" {
   name = "EC2-S3-Read"
 
@@ -30,18 +34,25 @@ resource "aws_iam_role_policy" "ssm_ec2_s3_read" {
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
+      # List bucket (required for ANY S3 cp)
       {
         Effect = "Allow"
-        Action = ["s3:GetObject"]
+        Action = [
+          "s3:ListBucket"
+        ]
+        Resource = aws_s3_bucket.app_artifacts.arn
+      },
+
+      # Read objects inside bucket
+      {
+        Effect = "Allow"
+        Action = [
+          "s3:GetObject"
+        ]
         Resource = "${aws_s3_bucket.app_artifacts.arn}/*"
       }
     ]
   })
-}
-
-resource "aws_iam_instance_profile" "ssm_profile" {
-  name = "EC2-SSM-InstanceProfile"
-  role = aws_iam_role.ssm_role.name
 }
 
 # ========= BITBUCKET OIDC PROVIDER =========
@@ -110,14 +121,14 @@ resource "aws_iam_policy" "pipeline_s3_access" {
       },
 
       # --- SSM SendCommand ---
-      {
-        Effect = "Allow"
-        Action = ["ssm:SendCommand"]
-        Resource = [
-          "arn:aws:ssm:ap-southeast-2:${data.aws_caller_identity.current.account_id}:document/AWS-RunShellScript",
-          "arn:aws:ec2:ap-southeast-2:${data.aws_caller_identity.current.account_id}:instance/*"
-        ]
-      }
+{
+  Effect = "Allow",
+  Action = ["ssm:SendCommand"],
+  Resource = [
+    "arn:aws:ssm:ap-southeast-2::document/AWS-RunShellScript",
+    "arn:aws:ec2:ap-southeast-2:${data.aws_caller_identity.current.account_id}:instance/*"
+  ]
+}
     ]
   })
 }
