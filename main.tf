@@ -1,10 +1,10 @@
 module "sg_test" {
- #the path to the module
-  source = "./modules/sg"
-  name        = "sg-test"
+  #the path to the module
+  source      = "./modules/sg"
+  name        = "test-sg"
   description = "testing module"
   #vpc is created by teacher so we just hard code it here with using variable
-  vpc_id      = var.vpc_id
+  vpc_id = var.vpc_id
 
   ingress = [{
     from_port   = 80
