@@ -1,0 +1,15 @@
+version: "3.8"
+
+services:
+  app:
+    image: ${DOCKER_USERZ}/${DOCKER_REPO}-app:${APP_TAG}
+    container_name: ${PROJECT_NAME}-app
+    restart: always
+    #the container 3000 port is mapped to the host (private ec2) 3000 port
+    ports:
+      - "3000:3000"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
