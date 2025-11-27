@@ -70,7 +70,7 @@ upload-s3:
 		--region $(AWS_REGION)
 
 	# Upload scripts/deploy.sh (your EC2 deployment script)
-	aws s3 cp deploy.sh \
+	aws s3 cp scripts/deploy.sh \
 		s3://$(S3_BUCKET)/deploy/deploy.sh \
 		--region $(AWS_REGION)
 
