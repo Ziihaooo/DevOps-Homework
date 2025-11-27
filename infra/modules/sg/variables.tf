@@ -28,3 +28,13 @@ variable "egress" {
     cidr_blocks = list(string)
   }))
 }
+
+variable "allow_sg_ingress" {
+  type = list(object({
+    from_port = number
+    to_port   = number
+    protocol  = string
+    source_sg = string
+  }))
+  default = []
+}

@@ -23,3 +23,4 @@ variable "create_instance_profile" {
   type    = bool
   default = false
 }
+

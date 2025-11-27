@@ -27,3 +27,13 @@ resource "aws_security_group" "this" {
     }
   }
 }
+resource "aws_security_group_rule" "allow_sg_ingress" {
+  for_each = { for idx, rule in var.allow_sg_ingress : idx => rule }
+
+  type              = "ingress"
+  from_port         = each.value.from_port
+  to_port           = each.value.to_port
+  protocol          = each.value.protocol
+  security_group_id = aws_security_group.this.id
+  source_security_group_id = each.value.source_sg
+}

@@ -1,150 +1,147 @@
 terraform {
-  required_version = ">= 1.3.0"
-
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = "~> 5.0"
-    }
+  backend "s3" {
+    bucket         = "terraforms3-zihao"
+    key            = "dev/week7/terraform/zihao/terraform.tfstate"
+    region         = "ap-southeast-2"
+    encrypt        = true
+    dynamodb_table = "terraform-lock-table"
   }
 }
+
 provider "aws" {
   region = "ap-southeast-2"
 }
 
-module "sg_test" {
- #the path to the module
-  source = "./modules/sg"
-  name        = "sg-test"
-  description = "testing module"
-  #vpc is created by teacher so we just hard code it here with using variable
+#########################################
+# SECURITY GROUPS
+#########################################
+
+
+# ALB SG
+module "sg_alb" {
+  source      = "../../modules/sg"
+  description = "ALB Security Group"
+  name        = "${var.env_name}-alb-sg"
   vpc_id      = var.vpc_id
-
-  ingress = [{
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }]
-
-  egress = [{
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }]
+  ingress     = var.alb_sg_ingress
+  egress      = var.alb_sg_egress
 }
 
-module "nat" {
-  source = "./modules/nat"
+module "sg_private" {
+  source      = "../../modules/sg"
+  name        = "${var.env_name}-ec2-sg"
+  vpc_id      = var.vpc_id
+  description = "EC2 Security Group"
 
-  name             = "dev"
-  vpc_id           = var.vpc_id
+  ingress = var.sg_ingress
+  egress  = var.sg_egress
+
+  allow_sg_ingress = [
+    {
+      from_port = 3000
+      to_port   = 3000
+      protocol  = "tcp"
+      source_sg = module.sg_alb.sg_id
+    }
+  ]
+}
+
+
+#########################################
+# NAT & ROUTES
+#########################################
+
+module "nat" {
+  source           = "../../modules/nat"
+  name             = var.nat_name
   public_subnet_id = var.public_subnet_id
 }
 
 module "private_routes" {
-  source =  "./modules/routetables"
-
-  name              = "dev"
+  source            = "../../modules/routetables"
+  name              = var.env_name
   vpc_id            = var.vpc_id
   private_subnet_id = var.private_subnet_id
   nat_gateway_id    = module.nat.nat_gateway_id
 }
 
-module "iam_ec2" {
-  source = "../../modules/iam"
+#########################################
+# S3
+#########################################
 
-  role_name           = "EC2-SSM-Role"
-  create_instance_profile = true
-
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [{
-      Effect    = "Allow"
-      Principal = { Service = "ec2.amazonaws.com" }
-      Action    = "sts:AssumeRole"
-    }]
-  })
-
-  managed_policy_arns = [
-    "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
-  ]
-
-  inline_policies = [
-    {
-      name = "EC2-S3-Read"
-      policy = jsonencode({
-        Version = "2012-10-17"
-        Statement = [
-          {
-            Effect   = "Allow"
-            Action   = ["s3:ListBucket"]
-            Resource = module.s3.bucket_arn
-          },
-          {
-            Effect   = "Allow"
-            Action   = ["s3:GetObject"]
-            Resource = "${module.s3.bucket_arn}/*"
-          }
-        ]
-      })
-    }
-  ]
+module "app_s3" {
+  source      = "../../modules/S3"
+  bucket_name = var.s3_bucket_name
+  tags        = var.s3_tags
 }
 
-module "iam_pipeline" {
-  source = "../../modules/iam"
+#########################################
+# IAM ROLES
+#########################################
 
-  role_name               = "PipelineOIDCRole"
-  create_instance_profile = false
+module "iam_ec2" {
+  source                  = "../../modules/iam"
+  role_name               = var.ec2_role_name
+  assume_role_policy      = var.ec2_assume_role_policy
+  managed_policy_arns     = var.ec2_managed_policy_arns
+  inline_policies         = var.ec2_inline_policies
+  create_instance_profile = true
+}
+#########################################
+# EC2 INSTANCE
+#########################################
 
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17",
-    Statement = [{
-      Effect = "Allow",
-      Principal = {
-        Federated = data.aws_iam_openid_connect_provider.bitbucket.arn
-      },
-      Action = "sts:AssumeRoleWithWebIdentity",
-      Condition = {
-        "ForAnyValue:StringEquals" = {
-          "api.bitbucket.org/2.0/workspaces/distinctioncoding/pipelines-config/identity/oidc:aud" = [
-            "ari:cloud:bitbucket::workspace/4819ba2a-d033-41a1-87c5-3988f84c0b16"
-          ]
-        }
-      }
-    }]
-  })
+module "ec2" {
+  source = "../../modules/ec2"
 
-  inline_policies = [{
-    name = "pipeline-access",
-    policy = jsonencode({
-      Version = "2012-10-17",
-      Statement = [
-        # ========== S3 ==========
-        {
-          Effect = "Allow"
-          Action = ["s3:PutObject", "s3:GetObject"]
-          Resource = "${module.s3.bucket_arn}/deploy/*"
-        },
-        {
-          Effect = "Allow"
-          Action = ["s3:ListBucket"]
-          Resource = module.s3.bucket_arn
-          Condition = { StringLike = { "s3:prefix" = "deploy/*" } }
-        },
+  ami_id                = var.ami_id
+  instance_type         = var.instance_type
+  subnet_id             = var.private_subnet_id
+  security_group_ids    = [module.sg_private.sg_id]
+  instance_profile_name = module.iam_ec2.instance_profile_name
 
-        # ========== SSM ==========
-        {
-          Effect = "Allow"
-          Action = ["ssm:SendCommand"]
-          Resource = [
-            "arn:aws:ssm:ap-southeast-2::document/AWS-RunShellScript",
-            "arn:aws:ec2:ap-southeast-2:${data.aws_caller_identity.current.account_id}:instance/*"
-          ]
-        }
-      ]
-    })
-  }]
+  user_data = <<-EOF
+    #!/bin/bash
+    systemctl enable amazon-ssm-agent
+    systemctl start amazon-ssm-agent
+    systemctl restart amazon-ssm-agent
+  EOF
+
+  name = "${var.env_name}-ec2-instance"
+
+  tags = {
+    Environment = var.env_name
+    Project     = "DevOps"
+  }
+
+  enable_alb_sg_rule = true
+  app_port           = 3000
+  ec2_sg_id          = module.sg_private.sg_id
+  alb_sg_id          = module.sg_alb.sg_id
+}
+
+#########################################
+# ALB
+#########################################
+
+module "alb" {
+  source = "../../modules/alb"
+
+  name              = var.alb_name
+  vpc_id            = var.vpc_id
+  public_subnet_ids = var.public_subnet_ids
+
+  alb_sg_id = module.sg_alb.sg_id
+
+  listener_port     = var.alb_listener_port
+  listener_protocol = var.alb_listener_protocol
+
+  target_port       = 3000
+  target_protocol   = "HTTP"
+  health_check_path = "/health"
+
+  attach_target = true
+  target_id     = module.ec2.instance_id
+
+  tags = var.alb_tags
 }
