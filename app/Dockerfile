@@ -4,6 +4,7 @@ WORKDIR /app
 
 COPY package*.json ./
 RUN npm ci --omit=dev && npm cache clean --force
+
 COPY . .
 
 # ---------- Runtime Stage ----------
@@ -12,8 +13,8 @@ RUN adduser -D appuser
 
 WORKDIR /app
 
-COPY --from=builder /app .
+COPY --from=builder /app ./
 USER appuser
 
 EXPOSE 3000
-CMD ["npm","start"]
+CMD ["npm", "start"]
