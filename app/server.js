@@ -4,7 +4,8 @@ const PORT = 3000;
 
 // Health endpoint
 app.get('/health', (req, res) => {
-  res.status(200).send('OK');
+  const version = process.env.APP_TAG || "unknown";
+  res.status(200).send(`OK VERSION=${version}`);
 });
 
 // Optional root endpoint
