@@ -5,8 +5,8 @@ AWS_REGION ?= ap-southeast-2
 
 lint:
 	@echo "Linting Dockerfile"
-	docker run --rm -v $(pwd):/app hadolint/hadolint hadolint /app/app/Dockerfile
-	docker run --rm -v $(pwd):/app hadolint/hadolint hadolint /app/nginx/Dockerfile
+	docker run --rm -v $$(pwd):/app hadolint/hadolint hadolint /app/app/Dockerfile
+	docker run --rm -v $$(pwd):/app hadolint/hadolint hadolint /app/nginx/Dockerfile
 
 build:
 	@echo "Building Docker images"
