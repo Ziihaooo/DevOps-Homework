@@ -15,3 +15,4 @@ pipelines:
             - make login
             - make push
             - make up
+            - make ngrok
