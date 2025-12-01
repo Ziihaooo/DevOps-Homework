@@ -1,7 +1,9 @@
 .PHONY: lint build login push up down restart ngrok
-PROJECT_NAME=orchestration-week8
-APP_TAG ?= $(or $(VERSION), $(shell git rev-parse --short HEAD))
-AWS_REGION ?= ap-southeast-2
+export PROJECT_NAME := orchestration-week8
+export APP_TAG := $(or $(VERSION), $(shell git rev-parse --short HEAD))
+export AWS_REGION := ap-southeast-2
+export DOCKER_USERZ ?= zavierrr
+export DOCKER_REPO ?= week8
 
 lint:
 	@echo "Linting Dockerfile"

@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
   app:
-    image: ${DOCKER_USERZ}/${DOCKER_REPO}-app:${APP_TAG}
+    image: ${DOCKER_USERZ}/${PROJECT_NAME}-app:${APP_TAG}
     container_name: ${PROJECT_NAME}-app
     restart: always
     expose:
@@ -16,7 +16,7 @@ services:
       - app-network
 
   nginx:
-    image: ${DOCKER_USERZ}/${DOCKER_REPO}-nginx:${APP_TAG}
+    image: ${DOCKER_USERZ}/${PROJECT_NAME}-nginx:${APP_TAG}
     container_name: ${PROJECT_NAME}-nginx
     restart: always
     ports:
