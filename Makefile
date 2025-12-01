@@ -10,11 +10,22 @@ lint:
 
 build:
 	@echo "Building Docker images"
-	docker build -t $(DOCKER_USERZ)/$(DOCKER_REPO)-app:$(APP_TAG) -f app/Dockerfile ./app
-	docker build -t $(DOCKER_USERZ)/$(DOCKER_REPO)-app:$(APP_TAG) -f nginx/Dockerfile ./nginx
+	docker build -t $(DOCKER_USERZ)/$(PROJECT_NAME)-app:$(APP_TAG) -f app/Dockerfile ./app
+	docker build -t $(DOCKER_USERZ)/$(PROJECT_NAME)-app:$(APP_TAG) -f nginx/Dockerfile ./nginx
 
 login:
 	docker login -u $(DOCKER_USERZ) -p $(DOCKER_PASS)
 
 push: login 
-	docker push $(DOCKER_USERZ)/$(DOCKER_REPO)-app:$(APP_TAG)
+	docker push $(DOCKER_USERZ)/$(PROJECT_NAME)-app:$(APP_TAG)
+
+up:
+	@echo "🚀 Starting containers..."
+	docker-compose up -d --build
+
+down:
+	@echo "🧹 Stopping containers..."
+	docker-compose down
+
+restart:
+	make down && make up

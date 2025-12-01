@@ -14,3 +14,4 @@ pipelines:
             - make build
             - make login
             - make push
+            - make up
