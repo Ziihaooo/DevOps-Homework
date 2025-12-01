@@ -37,7 +37,8 @@ ngrok:
 	docker-compose up -d
 	@echo "📦 Installing ngrok"
 	apk add --no-cache curl >/dev/null
-	curl -s https://static.ngrok.com/ngrok-v3-stable-linux-amd64.tgz -o ngrok.tgz
+	curl -L -s https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-linux-amd64.tgz -o ngrok.tgz
+
 	tar zxvf ngrok.tgz >/dev/null
 	@echo "🔑 Authenticating ngrok"
 	./ngrok authtoken $${NGROK_AUTHTOKEN_ZIHAO}
