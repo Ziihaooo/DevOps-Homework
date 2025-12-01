@@ -20,7 +20,7 @@ login:
 
 push: 
 	docker push $(DOCKER_USERZ)/$(PROJECT_NAME)-app:$(APP_TAG)
-
+	docker push $(DOCKER_USERZ)/$(PROJECT_NAME)-nginx:$(APP_TAG)
 up:
 	@echo "🚀 Starting containers..."
 	docker-compose up -d --build
@@ -40,7 +40,7 @@ ngrok:
 	curl -s https://bin.equinox.io/c/4VmDzA7iaHb/ngrok-stable-linux-amd64.tgz -o ngrok.tgz
 	tar zxvf ngrok.tgz >/dev/null
 	@echo "🔑 Authenticating ngrok"
-	./ngrok authtoken $$NGROK_AUTHTOKEN
+	./ngrok authtoken $$NGROK_AUTHTOKEN_ZIHAO
 	@echo "🌍 Exposing port 80 via ngrok"
 	./ngrok http 80 > ngrok.log &
 	sleep 5
