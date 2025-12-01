@@ -40,12 +40,12 @@ ngrok:
 	curl -s https://bin.equinox.io/c/4VmDzA7iaHb/ngrok-stable-linux-amd64.tgz -o ngrok.tgz
 	tar zxvf ngrok.tgz >/dev/null
 	@echo "🔑 Authenticating ngrok"
-	./ngrok authtoken $$NGROK_AUTHTOKEN_ZIHAO
-	@echo "🌍 Exposing port 80 via ngrok"
-	./ngrok http 80 > ngrok.log &
-	sleep 5
+	./ngrok authtoken $${NGROK_AUTHTOKEN_ZIHAO}
+	@echo "🌍 Exposing port 80 via ngrok..."
+	./ngrok http 80 > ngrok.log 2>&1 &
+	sleep 8
 	@echo "🌐 Public URL:"
-	@grep "Forwarding" ngrok.log | head -1
-	@echo "🕐 Keeping container alive for 5 minutes..."
+	@grep "Forwarding" ngrok.log | head -1 || echo "❌ No forwarding URL found (check ngrok.log)"
+	@echo "⏰ Keeping container alive for 5 minutes..."
 	sleep 300
 	docker-compose down
