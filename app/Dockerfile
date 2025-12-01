@@ -12,9 +12,11 @@ FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 COPY . .
 #similar to pip install -r requirements.txt or npm install
-RUN dotnet restore
 #compile the code in .dll, copy the dependencies to /app/publish folder
-RUN dotnet publish -c Release -o /app/publish
+RUN dotnet restore \
+ && dotnet publish -c Release -o /app/publish \
+ && rm -rf /root/.nuget/packages \
+ && dotnet nuget locals all --clear
 
 FROM base AS final
 WORKDIR /app
