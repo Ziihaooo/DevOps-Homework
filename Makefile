@@ -44,6 +44,8 @@ ngrok:
 	@echo "🌍 Exposing port 80 via ngrok..."
 	./ngrok http 80 --log=stdout --log-format=logfmt > ngrok.log 2>&1 &
 	sleep 8
+	@echo "📜 ngrok.log (tail):"
+	@tail -n 30 ngrok.log
 	@echo "🌐 Public URL:"
 	@grep -m 1 "msg=\"started tunnel\"" ngrok.log | awk -F"url=" '{print $$2}' || echo "❌ No tunnel URL found, check ngrok.log"
 	@echo "⏰ Keeping container alive for 5 minutes..."
