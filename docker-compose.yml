@@ -20,8 +20,11 @@ services:
     image: ${DOCKER_USERZ}/${PROJECT_NAME}-nginx:${APP_TAG}
     container_name: ${PROJECT_NAME}-nginx
     restart: always
+    ports:
+      - "80:80"
     depends_on:
-      - app
+      app:
+        condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost"]
       interval: 20s
