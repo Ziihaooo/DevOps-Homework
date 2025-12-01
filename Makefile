@@ -42,10 +42,11 @@ ngrok:
 	@echo "🔑 Authenticating ngrok"
 	./ngrok authtoken $${NGROK_AUTHTOKEN_ZIHAO}
 	@echo "🌍 Exposing port 80 via ngrok..."
-	./ngrok http 80 > ngrok.log 2>&1 &
+	./ngrok http 80 --log=stdout --log-format=logfmt > ngrok.log 2>&1 &
 	sleep 8
 	@echo "🌐 Public URL:"
-	@grep "Forwarding" ngrok.log | head -1 || echo "❌ No forwarding URL found (check ngrok.log)"
+	@grep -m 1 "msg=\"started tunnel\"" ngrok.log | awk -F"url=" '{print $$2}' || echo "❌ No tunnel URL found, check ngrok.log"
 	@echo "⏰ Keeping container alive for 5 minutes..."
 	sleep 300
 	docker-compose down
+
