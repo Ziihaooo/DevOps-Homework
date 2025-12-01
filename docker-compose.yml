@@ -1,0 +1,37 @@
+version: "3.8"
+
+services:
+  app:
+    image: ${DOCKER_USERZ}/${DOCKER_REPO}-app:${APP_TAG}
+    container_name: ${PROJECT_NAME}-app
+    restart: always
+    expose:
+      - "8080"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - app-network
+
+  nginx:
+    image: ${DOCKER_USERZ}/${DOCKER_REPO}-nginx:${APP_TAG}
+    container_name: ${PROJECT_NAME}-nginx
+    restart: always
+    ports:
+      - "80:80"
+    depends_on:
+      app:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge

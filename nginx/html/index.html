@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Week8 Web Service</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 100px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        #result {
+            margin-top: 20px;
+            color: #0078d7;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>Welcome to Week8 Static Web Page</h1>
+    <p>This page is served by Nginx (static content).</p>
+    <button id="sendBtn">Send Request</button>
+    <p id="result"></p>
+
+    <script>
+        document.getElementById("sendBtn").addEventListener("click", async () => {
+            try {
+                const res = await fetch("/api/request");
+                const text = await res.text();
+                document.getElementById("result").innerText = text;
+            } catch (err) {
+                document.getElementById("result").innerText = "Request failed 😢";
+            }
+        });
+    </script>
+</body>
+</html>
