@@ -13,7 +13,7 @@ lint:
 build:
 	@echo "Building Docker images"
 	docker build -t $(DOCKER_USERZ)/$(PROJECT_NAME)-app:$(APP_TAG) -f app/Dockerfile ./app
-	docker build -t $(DOCKER_USERZ)/$(PROJECT_NAME)-app:$(APP_TAG) -f nginx/Dockerfile ./nginx
+	docker build -t $(DOCKER_USERZ)/$(PROJECT_NAME)-nginx:$(APP_TAG) -f nginx/Dockerfile ./nginx
 
 login:
 	docker login -u $(DOCKER_USERZ) -p $(DOCKER_PASS)
