@@ -97,7 +97,7 @@ module "alb" {
 #########################################
 
 module "ecs" {
-#some hardcode must like awsvpc FARGATE is in the module
+  #some hardcode must like awsvpc FARGATE is in the module
   source = "../../modules/ecs"
 
   project_name = var.project_name

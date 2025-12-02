@@ -105,8 +105,8 @@ task_inline_policies  = []
 # ALB CONFIG
 #############################################
 
-alb_name            = "week8-alb"
-alb_listener_port   = 80
+alb_name              = "week8-alb"
+alb_listener_port     = 80
 alb_listener_protocol = "HTTP"
 alb_tags = {
   Project = "week8"
@@ -116,8 +116,8 @@ alb_tags = {
 # ECS CONFIG
 #############################################
 
-ecs_cpu    = 512
-ecs_memory = 1024
+ecs_cpu           = 512
+ecs_memory        = 1024
 ecs_desired_count = 1
 
 #############################################
@@ -127,8 +127,9 @@ ecs_desired_count = 1
 containers = [
   # Container 1 — Nginx static page (HTML/Images)
   {
-    name           = "nginx"
-    image          = "zavierrr/week8-nginx:latest"  
+    name = "nginx"
+    #pls update the image if needed
+    image          = "zavierrr/orchestration-week8-app:46a00a1"
     container_port = 80
     host_port      = 80
     essential      = true
@@ -138,7 +139,7 @@ containers = [
   # Container 2 — Feature App (.NET app or Node app)
   {
     name           = "app"
-    image          = "zavierrr/week8-app:latest" 
+    image          = "zavierrr/orchestration-week8-nginx:46a00a1"
     container_port = 8080
     host_port      = 8080
     essential      = true

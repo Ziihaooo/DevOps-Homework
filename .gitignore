@@ -48,3 +48,36 @@ Thumbs.db
 *.mov
 *.wmv
 
+./terraform
+### Terraform
+# Local .terraform directory
+**/.terraform/*
+
+# Terraform state files
+*.tfstate
+*.tfstate.backup
+
+# Crash log files
+crash.log
+crash.*.log
+
+# Exclude tfplan files
+*.tfplan
+
+# Exclude variable files with sensitive data
+#should not upload but I upload here for my future references
+#*.tfvars
+#*.tfvars.json
+
+# Ignore override files
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Ignore lock file (contains provider binary hash)
+.terraform.lock.hcl
+**/.terraform.lock.hcl
+
+# Ignore generated artifacts
+outputs.json
