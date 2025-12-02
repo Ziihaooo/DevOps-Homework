@@ -32,23 +32,5 @@ down:
 restart:
 	make down && make up
 
-ngrok:
-	@echo "🚀 Starting app + ngrok preview..."
-	docker-compose up -d
-	@echo "📦 Installing ngrok (v3 latest)"
-	apk add --no-cache curl >/dev/null
-	curl -L -s https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-linux-amd64.tgz -o ngrok.tgz
-	tar zxvf ngrok.tgz >/dev/null
-	@echo "🔑 Authenticating ngrok"
-	./ngrok authtoken $${NGROK_AUTHTOKEN_ZIHAO}
-	@echo "🌍 Exposing nginx:80 via ngrok..."
-	./ngrok http http://localhost:8080 --log=stdout --log-format=logfmt > ngrok.log 2>&1 &
-	sleep 8
-	@echo "📜 ngrok.log (tail):"
-	@tail -n 20 ngrok.log
-	@echo "🌐 Public URL:"
-	@grep -m 1 "started tunnel" ngrok.log | awk -F"url=" '{print $$2}'
-	@echo "⏰ Keeping container alive for 5 minutes..."
-	sleep 300
-	docker-compose down
+
 

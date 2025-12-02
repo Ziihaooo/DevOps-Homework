@@ -1,39 +1,54 @@
+#this file is for local testing
 version: "3.8"
 
 services:
   app:
-    image: ${DOCKER_USERZ}/${PROJECT_NAME}-app:${APP_TAG}
-    container_name: ${PROJECT_NAME}-app
+    build:
+      context: ./app
+      dockerfile: Dockerfile
+    image: week8-app:latest
+    container_name: week8-app
     restart: always
+
     expose:
       - "8080"
+
     healthcheck:
-      test: ["CMD-SHELL", "wget --spider -q http://localhost:8080/health || exit 1"]
-      interval: 20s
+      test: ["CMD-SHELL", "wget --spider -q http://0.0.0.0:8080/health || exit 1"]
+      interval: 10s
       timeout: 5s
-      retries: 8
-      start_period: 15s
+      retries: 5
+      start_period: 5s
 
     networks:
       - app-network
 
+
   nginx:
-    image: ${DOCKER_USERZ}/${PROJECT_NAME}-nginx:${APP_TAG}
-    container_name: ${PROJECT_NAME}-nginx
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    image: week8-nginx:latest
+    container_name: week8-nginx
     restart: always
+
     ports:
-      - "8080:80"
+      - "8080:80"    # 本地访问 http://localhost:8080
+
     depends_on:
       app:
         condition: service_healthy
+
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost"]
-      interval: 20s
+      test: ["CMD-SHELL", "wget --spider -q http://localhost || exit 1"]
+      interval: 10s
       timeout: 5s
       retries: 5
-      start_period: 10s
+      start_period: 5s
+
     networks:
       - app-network
+
 
 networks:
   app-network:
