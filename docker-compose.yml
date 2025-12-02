@@ -22,7 +22,7 @@ services:
     container_name: ${PROJECT_NAME}-nginx
     restart: always
     ports:
-      - "80:80"
+      - "8080:80"
     depends_on:
       app:
         condition: service_healthy
