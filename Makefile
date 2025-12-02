@@ -1,9 +1,19 @@
-.PHONY: lint build login push up down restart ngrok
+.PHONY: lint build login push up down restart local-up local-down local-restart
 export PROJECT_NAME := orchestration-week8
 export APP_TAG := $(or $(VERSION), $(shell git rev-parse --short HEAD))
 export AWS_REGION := ap-southeast-2
 export DOCKER_USERZ ?= zavierrr
 export DOCKER_REPO ?= week8
+define compose_cmd
+	@# Try docker-compose first
+	@if docker-compose version >/dev/null 2>&1; then \
+		echo "Using docker-compose"; \
+		docker-compose $(1); \
+	else \
+		echo "docker-compose not found, trying docker compose"; \
+		docker compose $(1); \
+	fi
+endef
 
 lint:
 	@echo "Linting Dockerfile"
@@ -32,5 +42,16 @@ down:
 restart:
 	make down && make up
 
+local-up:
+	@echo "🚀 Starting LOCAL environment..."
+	$(call compose_cmd,-f docker-compose.local.yml up -d --build)
 
+local-down:
+	@echo "🛑 Stopping LOCAL environment..."
+	$(call compose_cmd,-f docker-compose.local.yml down)
+
+local-restart:
+	@echo "🔄 Restarting LOCAL environment..."
+	$(call compose_cmd,-f docker-compose.local.yml down)
+	$(call compose_cmd,-f docker-compose.local.yml up -d --build)
 

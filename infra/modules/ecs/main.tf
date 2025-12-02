@@ -38,6 +38,7 @@ resource "aws_ecs_service" "this" {
     assign_public_ip = false
   }
 
+#attach that specific alb to this service 
   dynamic "load_balancer" {
     for_each = var.load_balancers
     content {
