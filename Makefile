@@ -42,7 +42,8 @@ ngrok:
 	@echo "🔑 Authenticating ngrok"
 	./ngrok authtoken $${NGROK_AUTHTOKEN_ZIHAO}
 	@echo "🌍 Exposing nginx:80 via ngrok..."
-	./ngrok http http://nginx:80 --log=stdout --log-format=logfmt > ngrok.log 2>&1 &
+	./ngrok http ./ngrok http http://localhost:80 --log=stdout --log-format=logfmt
+ --log=stdout --log-format=logfmt > ngrok.log 2>&1 &
 	sleep 8
 	@echo "📜 ngrok.log (tail):"
 	@tail -n 20 ngrok.log
