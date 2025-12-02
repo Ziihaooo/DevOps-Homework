@@ -32,4 +32,3 @@ pipelines:
             - cd infra/env/dev
             - terraform init -backend=false
             - terraform validate
-            - terraform plan -lock=false

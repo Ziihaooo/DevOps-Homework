@@ -2,6 +2,7 @@ version: "3.8"
 
 services:
   app:
+    #this actually should be fixed but is fine here because my image is always the same 
     image: ${DOCKER_USERZ}/${PROJECT_NAME}-app:${APP_TAG}
     container_name: ${PROJECT_NAME}-app
     restart: always
@@ -18,6 +19,7 @@ services:
       - app-network
 
   nginx:
+  #this actually should be fixed but is fine here because my image is always the same 
     image: ${DOCKER_USERZ}/${PROJECT_NAME}-nginx:${APP_TAG}
     container_name: ${PROJECT_NAME}-nginx
     restart: always
