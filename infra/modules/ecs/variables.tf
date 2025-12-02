@@ -32,8 +32,3 @@ variable "load_balancers" {
   }))
   default = []
 }
-
-variable "depends_on" {
-  type    = list(any)
-  default = []
-}

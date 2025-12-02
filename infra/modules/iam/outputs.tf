@@ -6,3 +6,7 @@ output "role_name" {
 output "instance_profile_name" {
   value = length(aws_iam_instance_profile.profile) > 0 ? aws_iam_instance_profile.profile[0].name : null
 }
+
+output "role_arn" {
+  value = aws_iam_role.this.arn
+}

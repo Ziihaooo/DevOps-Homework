@@ -47,6 +47,4 @@ resource "aws_ecs_service" "this" {
       container_port   = load_balancer.value.container_port
     }
   }
-
-  depends_on = var.depends_on
 }
