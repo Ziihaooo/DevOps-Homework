@@ -53,7 +53,7 @@ module "sg_ecs" {
 module "iam_ecs_execution" {
   source                  = "../../modules/iam"
   role_name               = var.execution_role_name
-  assume_role_policy      = var.execution_assume_policy
+  assume_role_policy      = jsonencode(var.execution_assume_policy)
   managed_policy_arns     = var.execution_managed_policies
   inline_policies         = var.execution_inline_policies
   create_instance_profile = false
@@ -62,12 +62,27 @@ module "iam_ecs_execution" {
 module "iam_ecs_task" {
   source                  = "../../modules/iam"
   role_name               = var.task_role_name
-  assume_role_policy      = var.task_assume_policy
+  assume_role_policy      = jsonencode(var.task_assume_policy)
   managed_policy_arns     = var.task_managed_policies
   inline_policies         = var.task_inline_policies
   create_instance_profile = false
 }
+#########################################
+# NAT and PRIVATE ROUTE
+#########################################
+module "nat" {
+  source           = "../../modules/nat"
+  name             = var.nat_name
+  public_subnet_id = var.public_subnet_ids[0]
+}
 
+module "private_routes" {
+  source            = "../../modules/routetables"
+  name              = var.env_name
+  vpc_id            = var.vpc_id
+  private_subnet_id = var.private_subnet_ids[0]
+  nat_gateway_id    = module.nat.nat_gateway_id
+}
 #########################################
 # ALB
 #########################################
@@ -85,7 +100,7 @@ module "alb" {
 
   target_port       = 80
   target_protocol   = "HTTP"
-  health_check_path = "/"
+  health_check_path = "/health"
 
   attach_target = false
 
@@ -108,7 +123,7 @@ module "ecs" {
   execution_role_arn = module.iam_ecs_execution.role_arn
   task_role_arn      = module.iam_ecs_task.role_arn
 
-  private_subnets = var.private_subnet_ids
+  private_subnets = [var.private_subnet_ids[0]]
   service_sg      = module.sg_ecs.sg_id
   desired_count   = var.ecs_desired_count
 

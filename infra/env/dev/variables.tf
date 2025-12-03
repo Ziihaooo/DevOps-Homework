@@ -10,6 +10,7 @@ variable "alb_sg_egress" {}
 variable "ecs_sg_ingress" {}
 variable "ecs_sg_egress" {}
 
+variable "nat_name" {}
 variable "alb_name" {}
 variable "alb_listener_port" {}
 variable "alb_listener_protocol" {}

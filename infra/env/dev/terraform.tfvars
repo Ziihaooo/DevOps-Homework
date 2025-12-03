@@ -3,6 +3,7 @@
 #############################################
 
 env_name     = "dev"
+nat_name     = "nat-zihao"
 project_name = "week8-app"
 
 #############################################
@@ -129,20 +130,29 @@ containers = [
   {
     name = "nginx"
     #pls update the image if needed
-    image          = "zavierrr/orchestration-week8-app:46a00a1"
-    container_port = 80
-    host_port      = 80
-    essential      = true
-    environment    = []
+    image = "zavierrr/orchestration-week8-nginx:46a00a1"
+    portMappings = [
+      {
+        containerPort = 80
+        hostPort      = 80
+      }
+    ]
+
+    essential   = true
+    environment = []
   },
 
   # Container 2 — Feature App (.NET app or Node app)
   {
-    name           = "app"
-    image          = "zavierrr/orchestration-week8-nginx:46a00a1"
-    container_port = 8080
-    host_port      = 8080
-    essential      = true
+    name  = "app"
+    image = "zavierrr/orchestration-week8-app:46a00a1"
+    portMappings = [
+      {
+        containerPort = 8080
+        hostPort      = 8080
+      }
+    ]
+    essential = true
 
     environment = [
       { name = "ASPNETCORE_ENVIRONMENT", value = "Production" }
