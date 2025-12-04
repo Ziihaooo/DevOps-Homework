@@ -5,20 +5,19 @@ services:
     build:
       context: ./app
       dockerfile: Dockerfile
-    image: week8-app:latest
+    image: week8-app:local
     container_name: week8-app
-
     expose:
       - "8080"
-
     networks:
       - app-network
 
   nginx:
     build:
-      context: .
-      dockerfile: nginx/Dockerfile.local
-    image: week8-nginx-local:latest
+      context: ./nginx
+      dockerfile: Dockerfile
+      target: runtime-local
+    image: week8-nginx:local
     container_name: week8-nginx-local
 
     ports:

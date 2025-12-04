@@ -122,45 +122,6 @@ ecs_memory        = 1024
 ecs_desired_count = 1
 
 #############################################
-# Multi-Container Setup (STATIC + APP)
-#############################################
-
-containers = [
-  # Container 1 — Nginx static page (HTML/Images)
-  {
-    name = "nginx"
-    #pls update the image if needed
-    image = "zavierrr/orchestration-week8-nginx:b100c8f"
-    portMappings = [
-      {
-        containerPort = 80
-        hostPort      = 80
-      }
-    ]
-
-    essential   = true
-    environment = []
-  },
-
-  # Container 2 — Feature App (.NET app or Node app)
-  {
-    name  = "app"
-    image = "zavierrr/orchestration-week8-app:b100c8f"
-    portMappings = [
-      {
-        containerPort = 8080
-        hostPort      = 8080
-      }
-    ]
-    essential = true
-
-    environment = [
-      { name = "ASPNETCORE_ENVIRONMENT", value = "Production" }
-    ]
-  }
-]
-
-#############################################
 # ALB → send traffic only to nginx container
 #############################################
 

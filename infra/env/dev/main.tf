@@ -106,7 +106,21 @@ module "alb" {
 
   tags = var.alb_tags
 }
+#########################################
+# Cloud Watch
+#########################################
+module "nginx_log" {
+  source = "../../modules/cloudwatch_log"
 
+  name = "/ecs/${var.project_name}-nginx"
+  retention_in_days = 7
+}
+module "app_log" {
+  source = "../../modules/cloudwatch_log"
+
+  name = "/ecs/${var.project_name}-app"
+  retention_in_days = 7
+}
 #########################################
 # ECS (Cluster + TaskDefinition + Service)
 #########################################
@@ -128,7 +142,8 @@ module "ecs" {
   desired_count   = var.ecs_desired_count
 
   # your containers (nginx + app)
-  containers = var.containers
+  #because it needs to use the module from cloudwatch
+  containers = local.containers
 
   # ALB pointing only to nginx container
   load_balancers = [
@@ -140,5 +155,54 @@ module "ecs" {
   ]
 
   depends_on = [module.alb.alb_listener_arn]
+}
+
+  # your containers (nginx + app)
+locals {
+  containers = [
+    {
+      name  = "nginx"
+      image = "zavierrr/orchestration-week8-nginx:b100c8f"
+      essential = true
+
+      portMappings = [{
+        containerPort = 80
+        hostPort      = 80
+      }]
+
+      logConfiguration = {
+        logDriver = "awslogs"
+        options = {
+          awslogs-group         = module.nginx_log.log_group_name
+          awslogs-region        = "ap-southeast-2"
+          awslogs-stream-prefix = "nginx"
+        }
+      }
+    },
+
+    {
+      name  = "app"
+      image = "zavierrr/orchestration-week8-app:b100c8f"
+      essential = true
+
+      portMappings = [{
+        containerPort = 8080
+        hostPort      = 8080
+      }]
+
+      environment = [
+        { name = "ASPNETCORE_ENVIRONMENT", value = "Production" }
+      ]
+
+      logConfiguration = {
+        logDriver = "awslogs"
+        options = {
+          awslogs-group         = module.app_log.log_group_name
+          awslogs-region        = "ap-southeast-2"
+          awslogs-stream-prefix = "app"
+        }
+      }
+    }
+  ]
 }
 

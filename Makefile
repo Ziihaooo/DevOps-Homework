@@ -1,4 +1,4 @@
-.PHONY: lint build login push up down restart local-up local-down local-restart
+.PHONY: lint build login push up down restart local-build local-up local-down local-restart
 export PROJECT_NAME := orchestration-week8
 export APP_TAG := $(or $(VERSION), $(shell git rev-parse --short HEAD))
 export AWS_REGION := ap-southeast-2
@@ -23,7 +23,7 @@ lint:
 build:
 	@echo "Building Docker images"
 	docker build -t $(DOCKER_USERZ)/$(PROJECT_NAME)-app:$(APP_TAG) -f app/Dockerfile ./app
-	docker build -t $(DOCKER_USERZ)/$(PROJECT_NAME)-nginx:$(APP_TAG) -f nginx/Dockerfile ./nginx
+	docker build --target runtime-cloud -t $(DOCKER_USERZ)/$(PROJECT_NAME)-nginx:$(APP_TAG) -f nginx/Dockerfile ./nginx
 
 login:
 	docker login -u $(DOCKER_USERZ) -p $(DOCKER_PASS)
@@ -41,6 +41,11 @@ down:
 
 restart:
 	make down && make up
+
+local-build:
+	@echo "Building local image"
+	docker build  -t week8-app:1 -f app/Dockerfile ./app
+	docker build --target runtime-local -t week8-nginx:1 -f nginx/Dockerfile ./nginx
 
 local-up:
 	@echo "🚀 Starting LOCAL environment..."

@@ -1,3 +1,4 @@
+#this file is no needed, i have this just incase I use ec2
 version: "3.8"
 
 services:
