@@ -51,7 +51,6 @@ pipelines:
             - cd infra/env/dev
             - terraform init
             - terraform plan -no-color
-            - cat tfplan.txt
 
 
       - step:
