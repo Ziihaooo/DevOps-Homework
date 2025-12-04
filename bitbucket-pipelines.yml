@@ -50,7 +50,9 @@ pipelines:
             # Actual plan with backend
             - cd infra/env/dev
             - terraform init
-            - terraform plan
+            - terraform plan -no-color -out tfplan.txt
+            - cat tfplan.txt
+
 
       - step:
           name: Terraform Apply
