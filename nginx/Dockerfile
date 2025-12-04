@@ -12,16 +12,14 @@ COPY html/ /html/
 # Stage 2: Local Version
 ###############################
 FROM base AS local
-RUN echo "=== BUILDING LOCAL VERSION ==="
-RUN cp default.local.conf final.conf
+RUN echo "=== BUILDING LOCAL VERSION ===" && cp default.local.conf final.conf
 
 
 ###############################
 # Stage 3: Cloud Version
 ###############################
 FROM base AS cloud
-RUN echo "=== BUILDING CLOUD VERSION ==="
-RUN cp default.conf final.conf
+RUN echo "=== BUILDING CLOUD VERSION ===" && cp default.conf final.conf
 
 
 ###############################
