@@ -30,6 +30,5 @@ variable "ecs_cpu" {}
 variable "ecs_memory" {}
 variable "ecs_desired_count" {}
 
-variable "containers" {}
 variable "lb_container_name" {}
 variable "lb_container_port" {}
