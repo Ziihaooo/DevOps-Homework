@@ -50,7 +50,7 @@ pipelines:
             # Actual plan with backend
             - cd infra/env/dev
             - terraform init
-            - terraform plan -no-color -out tfplan.txt
+            - terraform plan -no-color
             - cat tfplan.txt
 
 

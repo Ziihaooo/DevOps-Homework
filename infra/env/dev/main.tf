@@ -162,7 +162,7 @@ locals {
   containers = [
     {
       name  = "nginx"
-      image = "zavierrr/orchestration-week8-nginx:b100c8f"
+      image = "zavierrr/orchestration-week8-nginx:df764b6"
       essential = true
 
       portMappings = [{
@@ -182,7 +182,7 @@ locals {
 
     {
       name  = "app"
-      image = "zavierrr/orchestration-week8-app:b100c8f"
+      image = "zavierrr/orchestration-week8-app:df764b6"
       essential = true
 
       portMappings = [{
