@@ -169,7 +169,7 @@ locals {
         containerPort = 80
         hostPort      = 80
       }]
-
+      environment = []
       logConfiguration = {
         logDriver = "awslogs"
         options = {
