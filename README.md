@@ -6,6 +6,8 @@ This project showcases a full DevOps workflow that includes:
 - AWS deployment using Terraform (IaC)
 - ECS Fargate service wired behind an Application Load Balancer
 - Automated CI/CD via Bitbucket Pipelines
+- CloudWatch log integration for both containers
+- Multi-stage Dockerfile for efficient builds
 
 The application consists of **two containers** running inside a **single Fargate task**:
 1. **nginx** – serves static HTML assets and proxies API requests
@@ -48,6 +50,8 @@ Fargate Service
 
 Application Load Balancer + target group
 
+CloudWatch Log Groups for both containers
+
 Deploy to AWS
 cd infra/envs/dev
 terraform init
@@ -68,7 +72,7 @@ The pipeline runs automatically on pushes to my branch, as required.
 
 Pipeline stages:
 
-Build container images
+### Build container images
 
 nginx image
 
@@ -76,7 +80,7 @@ backend app image
 
 push to Docker Hub using Bitbucket-secured variables
 
-Infrastructure validation stage
+### Infrastructure validation stage
 
 terraform fmt -check
 
@@ -86,7 +90,13 @@ Ensures IaC correctness before deployment
 
 Depending on branch policies
 
-Security
+### Manual : Terraform apply and terraform destory
+
+### its recommended you run this step on your local and then run on pipelines
+terraform apply -auto-approve
+terraform destroy -auto-approve
+
+## Security
 
 No credentials or secrets are hard-coded
 
