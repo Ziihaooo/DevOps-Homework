@@ -1,27 +1,23 @@
 resource "aws_sqs_queue" "queue" {
-  name                      = "${var.name}-queue"
-  message_retention_seconds = 86400
-  visibility_timeout_seconds = 30
-  receive_wait_time_seconds = 5
+  name                       = "${var.name}-queue"
+  #how long the message will retent
+  #only for the message that havent been processed
+  message_retention_seconds  = var.message_retention_seconds
+  #the time that hides it when taken by lambda
+  visibility_timeout_seconds = var.visibility_timeout_seconds
+  #the time duration that lambda ask sqs for message 
+  receive_wait_time_seconds  = var.receive_wait_time_seconds
 
   redrive_policy = jsonencode({
+    #the dead letter queue for this queue
     deadLetterTargetArn = aws_sqs_queue.dlq.arn
-    maxReceiveCount     = 5
+    #the failing time that lambda try
+    maxReceiveCount     = var.dlq_max_receive_count
   })
 }
+
 
 resource "aws_sqs_queue" "dlq" {
   name = "${var.name}-dlq"
 }
 
-output "queue_url" {
-  value = aws_sqs_queue.queue.url
-}
-
-output "queue_arn" {
-  value = aws_sqs_queue.queue.arn
-}
-
-output "dlq_arn" {
-  value = aws_sqs_queue.dlq.arn
-}

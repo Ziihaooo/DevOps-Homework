@@ -1,75 +1,23 @@
-resource "aws_iam_role" "lambda_role" {
-  name = "${var.name}-lambda-role"
-
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Effect = "Allow"
-        Principal = {
-          Service = "lambda.amazonaws.com"
-        }
-        Action = "sts:AssumeRole"
-      }
-    ]
-  })
-}
-
-# Basic Lambda Logging
-resource "aws_iam_role_policy_attachment" "basic_logging" {
-  role       = aws_iam_role.lambda_role.name
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
-}
-
-# Allow Lambda to use Route 53
-resource "aws_iam_role_policy" "route53_access" {
-  role = aws_iam_role.lambda_role.id
-
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Effect = "Allow"
-        Action = [
-          "route53:ChangeResourceRecordSets",
-          "route53:ListHostedZonesByName"
-        ]
-        Resource = "*"
-      }
-    ]
-  })
-}
-
-# The Lambda function itself
 resource "aws_lambda_function" "dns_lambda" {
-  function_name = var.name
-  role          = aws_iam_role.lambda_role.arn
+  function_name = var.lambda_name
+  #the role given to lambda
+  #need cloudwatch and route 53 resource change based on the project 
+  #also resource = specific hsoted zone
+  role          = var.role_arn
+  #wwhere should the code start working 
   handler       = "main.lambda_handler"
-  runtime       = "python3.11"
-
-  filename         = var.lambda_zip_path
-  source_code_hash = filebase64sha256(var.lambda_zip_path)
+  #the intepreter (compiler)
+  runtime       = "python3.12"
+  #the zip file for code
+  filename      = var.lambda_zip_path
 
   environment {
     variables = {
+        #you can only modify this hosted zone 
       HOSTED_ZONE_ID = var.hosted_zone_id
-      ROOT_DOMAIN     = var.root_domain
+      #this is the base name
+      BASE_DOMAIN    = var.base_domain
     }
   }
 }
 
-# SQS → Lambda Trigger
-resource "aws_lambda_event_source_mapping" "sqs_trigger" {
-  event_source_arn  = var.sqs_queue_arn
-  function_name     = aws_lambda_function.dns_lambda.arn
-  batch_size        = 5
-  enabled           = true
-}
-
-output "lambda_arn" {
-  value = aws_lambda_function.dns_lambda.arn
-}
-
-output "lambda_name" {
-  value = aws_lambda_function.dns_lambda.function_name
-}
