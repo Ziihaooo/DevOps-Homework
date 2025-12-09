@@ -1,4 +1,4 @@
-variable "name" {
+variable "lambda_name" {
   type        = string
   description = "Lambda function name"
 }
@@ -18,7 +18,12 @@ variable "hosted_zone_id" {
   description = "Route 53 Hosted Zone ID"
 }
 
-variable "root_domain" {
+variable "base_domain" {
   type        = string
   description = "Root domain for DNS provisioning"
+}
+
+variable "lambda_timeout" {
+  type = number
+  description = "Maximum time (in seconds) that the Lambda function is allowed to run before timing out."
 }

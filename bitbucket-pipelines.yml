@@ -1,0 +1,89 @@
+image: docker:24
+
+pipelines:
+  branches:
+    DEVOPSOCT-66:
+      - step:
+          name: Terraform Validation
+          script:
+            - apk add --no-cache bash curl unzip
+            - export DOCKER_BUILDKIT=0
+
+            # Install Terraform
+            - wget https://releases.hashicorp.com/terraform/1.8.5/terraform_1.8.5_linux_amd64.zip
+            - unzip terraform_1.8.5_linux_amd64.zip
+            - mv terraform /usr/local/bin/
+
+            # Validation
+            - cd infra/env/dev
+            - terraform init -backend=false
+            - terraform validate
+
+      - step:
+          name: Terraform Plan
+          oidc: true
+          script:
+            - apk add --no-cache bash curl unzip aws-cli jq
+            - export DOCKER_BUILDKIT=0
+
+            - echo $BITBUCKET_STEP_OIDC_TOKEN > /tmp/bb.token
+            - export AWS_ROLE_ARN="arn:aws:iam::314146318322:role/BitbucketPipelineOIDCRole"
+            - export AWS_WEB_IDENTITY_TOKEN_FILE="/tmp/bb.token"
+            - export AWS_REGION="ap-southeast-2"
+            # Install Terraform
+            - wget https://releases.hashicorp.com/terraform/1.8.5/terraform_1.8.5_linux_amd64.zip
+            - unzip terraform_1.8.5_linux_amd64.zip
+            - mv terraform /usr/local/bin/
+
+            # Actual plan with backend
+            - cd infra/env/dev
+            - terraform init
+            - terraform plan -no-color
+
+
+      - step:
+          name: Terraform Apply
+          trigger: manual
+          oidc: true
+          script:
+            - apk add --no-cache bash curl unzip aws-cli jq
+            - export DOCKER_BUILDKIT=0
+
+            - echo $BITBUCKET_STEP_OIDC_TOKEN > /tmp/bb.token
+            - export AWS_ROLE_ARN="arn:aws:iam::314146318322:role/BitbucketPipelineOIDCRole"
+            - export AWS_WEB_IDENTITY_TOKEN_FILE="/tmp/bb.token"
+            - export AWS_REGION="ap-southeast-2"
+            # Install Terraform
+            - wget https://releases.hashicorp.com/terraform/1.8.5/terraform_1.8.5_linux_amd64.zip
+            - unzip terraform_1.8.5_linux_amd64.zip
+            - mv terraform /usr/local/bin/
+
+            # Apply with backend
+            - cd infra/env/dev
+            - terraform init
+            #with manually trigger auto approve is fine here
+            - terraform apply -auto-approve
+      - step:
+          name: Terraform Destroy
+          trigger: manual
+          oidc: true
+          script:
+            - apk add --no-cache bash curl unzip aws-cli jq
+            - export DOCKER_BUILDKIT=0
+
+            - echo $BITBUCKET_STEP_OIDC_TOKEN > /tmp/bb.token
+            - export AWS_ROLE_ARN="arn:aws:iam::314146318322:role/BitbucketPipelineOIDCRole"
+            - export AWS_WEB_IDENTITY_TOKEN_FILE="/tmp/bb.token"
+            - export AWS_REGION="ap-southeast-2"
+
+            # Install Terraform
+            - wget https://releases.hashicorp.com/terraform/1.8.5/terraform_1.8.5_linux_amd64.zip
+            - unzip terraform_1.8.5_linux_amd64.zip
+            - mv terraform /usr/local/bin/
+
+            # Terraform destroy
+            - cd infra/env/dev
+            - terraform init
+            #with manually trigger auto approve is fine here
+
+            - terraform destroy -auto-approve

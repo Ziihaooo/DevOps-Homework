@@ -26,3 +26,7 @@ variable "dlq_max_receive_count" {
   type        = number
   default     = 5
 }
+variable "lambda_role_arn" {
+  type        = string
+  description = "IAM role ARN of Lambda function allowed to read from SQS"
+}

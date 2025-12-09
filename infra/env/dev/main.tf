@@ -9,6 +9,8 @@ module "client_domain_sqs" {
   message_retention_seconds  = var.message_retention_seconds
   receive_wait_time_seconds  = var.receive_wait_time_seconds
   dlq_max_receive_count      = var.dlq_max_receive_count
+  lambda_role_arn            = module.lambda_dns_iam.role_arn
+
 }
 
 ####################################
@@ -17,7 +19,6 @@ module "client_domain_sqs" {
 resource "aws_route53_zone" "client_dns_zone" {
   name = var.base_domain
 }
-
 ####################################
 # 3. IAM Role for Lambda (Module)
 ####################################
@@ -45,11 +46,12 @@ module "lambda_dns_iam" {
 module "lambda_dns" {
   source = "../../modules/lambda_dns"
 
-  lambda_name   = var.lambda_name
-  role_arn      = module.lambda_dns_iam.role_arn
+  lambda_name     = var.lambda_name
+  role_arn        = module.lambda_dns_iam.role_arn
   lambda_zip_path = var.lambda_zip_path
-  hosted_zone_id  = aws_route53_zone.client_dns.zone_id
-  root_domain     = var.base_domain
+  hosted_zone_id  = aws_route53_zone.client_dns_zone.id
+  base_domain     = var.base_domain
+  lambda_timeout  = var.lambda_timeout
 }
 
 

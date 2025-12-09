@@ -20,4 +20,25 @@ resource "aws_sqs_queue" "queue" {
 resource "aws_sqs_queue" "dlq" {
   name = "${var.name}-dlq"
 }
+resource "aws_sqs_queue_policy" "lambda_access" {
+  queue_url = aws_sqs_queue.queue.id
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow"
+        Principal = {
+          AWS = var.lambda_role_arn
+        }
+        Action = [
+          "sqs:ReceiveMessage",
+          "sqs:DeleteMessage",
+          "sqs:GetQueueAttributes"
+        ]
+        Resource = aws_sqs_queue.queue.arn
+      }
+    ]
+  })
+}
 

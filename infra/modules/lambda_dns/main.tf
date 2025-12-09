@@ -10,7 +10,9 @@ resource "aws_lambda_function" "dns_lambda" {
   runtime       = "python3.12"
   #the zip file for code
   filename      = var.lambda_zip_path
-
+  #for checking the zip file has been modified or not
+  source_code_hash = filebase64sha256(var.lambda_zip_path)
+  timeout = var.lambda_timeout
   environment {
     variables = {
         #you can only modify this hosted zone 
