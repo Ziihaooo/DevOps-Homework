@@ -12,6 +12,12 @@ provider "aws" {
   region = "ap-southeast-2"
 }
 
+#for route53 cloddwatch log
+provider "aws" {
+  alias  = "us_east_1"
+  region = "us-east-1"
+}
+
 ####################################
 # 1. SQS Queue Module
 ####################################
@@ -158,9 +164,14 @@ module "alb" {
 module "route53_cloudwatch" {
   source = "../../modules/cloudwatch_log"
 
+  providers = {
+    aws = aws.us_east_1
+  }
+
   name              = var.cloudwatchname
   retention_in_days = var.retention_in_days
 }
+
 
 
 module "grafana_log_group" {
@@ -169,6 +180,41 @@ module "grafana_log_group" {
   name              = var.grafanacw
   retention_in_days = var.grafana_retention_in_days
 }
+###############################################
+# 9.1 CloudWatch Resource Policy for Route53
+###############################################
+
+data "aws_caller_identity" "current" {}
+
+locals {
+  log_group_arn_prefix = "arn:aws:logs:us-east-1:${data.aws_caller_identity.current.account_id}:log-group"
+}
+
+resource "aws_cloudwatch_log_resource_policy" "route53" {
+  provider = aws.us_east_1
+  policy_name = "route53-query-logs-policy"
+
+  policy_document = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "Route53QueryLogs",
+      "Effect": "Allow",
+      "Principal": {
+        "Service": "route53.amazonaws.com"
+      },
+      "Action": [
+        "logs:CreateLogStream",
+        "logs:PutLogEvents"
+      ],
+      "Resource": "${local.log_group_arn_prefix}:${module.route53_cloudwatch.log_group_name}:*"
+    }
+  ]
+}
+EOF
+}
+
 /*
 ###############################################
 # 10. IAM role Grafana 
@@ -310,4 +356,8 @@ locals {
 resource "aws_route53_query_log" "route53_logs" {
   zone_id                  = aws_route53_zone.client_dns_zone.zone_id
   cloudwatch_log_group_arn = module.route53_cloudwatch.arn
+
+  depends_on = [
+    aws_cloudwatch_log_resource_policy.route53
+  ]
 }

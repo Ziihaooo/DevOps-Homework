@@ -56,13 +56,26 @@ lambda_inline_policies = [
             "route53:ChangeResourceRecordSets",
             "route53:ListResourceRecordSets"
           ]
-          #this will be restricted at lambda level which will become just for one specific hosted zone
+          Resource = "*"
+        }
+      ]
+    }
+  },
+  {
+    name = "lambda-cw-putmetric"
+    policy = {
+      Version = "2012-10-17"
+      Statement = [
+        {
+          Effect   = "Allow"
+          Action   = ["cloudwatch:PutMetricData"]
           Resource = "*"
         }
       ]
     }
   }
 ]
+
 
 lambda_name     = "client-domain-dns-function"
 lambda_zip_path = "../../../lambda/dns_handler.zip"
