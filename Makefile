@@ -11,13 +11,13 @@ lint:
 
 build:
 	@echo "Building Docker images"
-	docker build -t $(DOCKER_USERZ)/$(PROJECT_NAME)-app:$(APP_TAG) -f grafana/Dockerfile ./grafana
+	docker build -t $(DOCKER_USERZ)/$(PROJECT_NAME):$(APP_TAG) -f grafana/Dockerfile ./grafana
 
 login:
 	docker login -u $(DOCKER_USERZ) -p $(DOCKER_PASS)
 
 push: 
-	docker push $(DOCKER_USERZ)/$(PROJECT_NAME)-grafana:$(APP_TAG)
+	docker push $(DOCKER_USERZ)/$(PROJECT_NAME):$(APP_TAG)
 
 aws-oidc:
 	@echo "Configuring AWS OIDC..."
