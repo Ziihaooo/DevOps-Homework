@@ -1,6 +1,6 @@
-env_name = "dev"
-project_name = "Automated_CDS"
-vpc_id = "vpc-0a775837570253930"
+env_name           = "dev"
+project_name       = "Automated_CDS"
+vpc_id             = "vpc-0a775837570253930"
 public_subnet_ids  = ["subnet-0a05dfbfa9b02eb45", "subnet-044bb7e2c10d0b1ee"]
 private_subnet_ids = ["subnet-089bf9a6ed97aad05", "subnet-0cdfed7a146ee743c"]
 
@@ -118,8 +118,8 @@ alb_listener_protocol = "HTTP"
 alb_tags = {
   Project = "week8"
 }
-target_port = "3000"
-target_protocol = "HTTP"
+target_port       = "3000"
+target_protocol   = "HTTP"
 health_check_path = "/api/health"
 
 #############################################
@@ -128,6 +128,8 @@ health_check_path = "/api/health"
 cloudwatchname = "/aws/route53/query-logs"
 retention_in_days = 30
 
+grafanacw                 = "/aws/ecs/grafana"
+grafana_retention_in_days = 30
 /*
 #############################################
 # GRAFANA IAM
@@ -254,14 +256,38 @@ task_assume_policy = ({
 })
 
 task_managed_policies = []
-task_inline_policies  = []
+task_inline_policies = [
+  {
+    name = "grafana-cloudwatch-read"
+    policy = {
+      Version = "2012-10-17"
+      Statement = [
+        {
+          Effect = "Allow"
+          Action = [
+            "cloudwatch:ListMetrics",
+            "cloudwatch:GetMetricData",
+            "cloudwatch:DescribeAlarms",
+            "cloudwatch:DescribeAlarmHistory",
+            "logs:DescribeLogGroups",
+            "logs:DescribeLogStreams",
+            "logs:GetLogEvents",
+            "logs:FilterLogEvents"
+          ]
+          Resource = "*"
+        }
+      ]
+    }
+  }
+]
+
 
 #############################################
 # Grafana ECS
 #############################################
 lb_container_name = "grafana"
 lb_container_port = 3000
-grafana_image      = "zavierrr/grafana:latest"
-ecs_cpu            = 256
-ecs_memory         = 512
-ecs_desired_count  = 1
+grafana_image     = "zavierrr/grafana-week9:9e4c2c0"
+ecs_cpu           = 256
+ecs_memory        = 512
+ecs_desired_count = 1

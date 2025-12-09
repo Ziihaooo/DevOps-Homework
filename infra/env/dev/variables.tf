@@ -1,6 +1,5 @@
 variable "env_name" {}
 variable "project_name" {}
-
 variable "vpc_id" {}
 variable "public_subnet_ids" {}
 variable "private_subnet_ids" {}
@@ -83,7 +82,7 @@ variable "grafana_sg_egress" {}
 ############################################
 # NAT 
 ############################################
-variable "nat_name"{
+variable "nat_name" {
   type = string
 }
 
@@ -94,16 +93,16 @@ variable "alb_name" {}
 variable "alb_listener_port" {}
 variable "alb_listener_protocol" {}
 variable "alb_tags" {}
-variable "target_port"{}
-variable "target_protocol"{}
-variable "health_check_path"{}
+variable "target_port" {}
+variable "target_protocol" {}
+variable "health_check_path" {}
 
 #############################################
 # Cloudwatch
 #############################################
-variable "cloudwatchname"{}
+variable "cloudwatchname" {}
 variable "retention_in_days" {}
-variable "grafanacw"{}
+variable "grafanacw" {}
 variable "grafana_retention_in_days" {}
 ##############################
 # Grafana IAM variables
@@ -159,8 +158,8 @@ variable "task_inline_policies" {}
 ##############################
 # Grafana ECS
 ##############################
-variable "lb_container_name"{}
-variable "lb_container_port"{}
+variable "lb_container_name" {}
+variable "lb_container_port" {}
 variable "grafana_image" {}
 variable "ecs_cpu" {}
 variable "ecs_memory" {}
