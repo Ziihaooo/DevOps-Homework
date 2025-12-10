@@ -191,7 +191,7 @@ locals {
 }
 
 resource "aws_cloudwatch_log_resource_policy" "route53" {
-  provider = aws.us_east_1
+  provider    = aws.us_east_1
   policy_name = "route53-query-logs-policy"
 
   policy_document = <<EOF

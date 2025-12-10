@@ -99,19 +99,21 @@ def lambda_handler(event, context):
             "delete": "DELETE"
         }[action]
 
-        resource_records = [] if action == "delete" else [{"Value": target_value}]
+        rrset = {
+            "Name": fqdn,
+            "Type": record_type,
+            "TTL": ttl,
+            "ResourceRecords": [{"Value": target_value}]
+        }
+
+
 
         dns_change = {
             "Comment": f"Automated DNS {action} request",
             "Changes": [
                 {
                     "Action": route53_action,
-                    "ResourceRecordSet": {
-                        "Name": fqdn,
-                        "Type": record_type,
-                        "TTL": ttl,
-                        "ResourceRecords": resource_records
-                    }
+                    "ResourceRecordSet": rrset
                 }
             ]
         }
@@ -134,24 +136,36 @@ def lambda_handler(event, context):
             # SAFE metric write
             try:
                 cloudwatch.put_metric_data(
-                    Namespace="ClientDomainSystem",
-                    MetricData=[
-                        {
-                            "MetricName": "SuccessCount",
-                            "Dimensions": [
-                                {"Name": "Client", "Value": client},
-                                {"Name": "Action", "Value": action},
-                            ],
-                            "Value": 1,
-                            "Unit": "Count",
-                        },
-                        {
-                            "MetricName": "SuccessTotal",
-                            "Value": 1,
-                            "Unit": "Count"
-                        }
-                    ],
-                )
+                Namespace="ClientDomainSystem",
+                MetricData=[
+                    {
+                        "MetricName": "SuccessCount",
+                        "Dimensions": [
+                            {"Name": "Client", "Value": client},
+                            {"Name": "Action", "Value": action},
+                        ],
+                        "Value": 1,
+                        "Unit": "Count",
+                    },
+                    {
+                        "MetricName": "SuccessByAction",
+                        "Dimensions": [
+                            {"Name": "Action", "Value": action},
+                        ],
+                        "Value": 1,
+                        "Unit": "Count",
+                    },
+                    {
+                        "MetricName": "SuccessByClient",
+                        "Dimensions": [
+                            {"Name": "Client", "Value": client},
+                        ],
+                        "Value": 1,
+                        "Unit": "Count",
+                    },
+                ],
+            )
+
             except Exception as metric_err:
                 print("Metric write failed:", str(metric_err))
 
@@ -166,25 +180,38 @@ def lambda_handler(event, context):
             # Metric failure (safe)
             try:
                 cloudwatch.put_metric_data(
-                    Namespace="ClientDomainSystem",
-                    MetricData=[
-                        {
-                            "MetricName": "FailureCount",
-                            "Dimensions": [
-                                {"Name": "Client", "Value": client},
-                                {"Name": "Action", "Value": action},
-                            ],
-                            "Value": 1,
-                            "Unit": "Count",
-                        },
-                        {
-                            "MetricName": "FailureTotal",
-                            "Value": 1,
-                            "Unit": "Count"
-                        }
+                Namespace="ClientDomainSystem",
+                MetricData=[
+                    {
+                        "MetricName": "FailureCount",
+                        "Dimensions": [
+                            {"Name": "Client", "Value": client},
+                            {"Name": "Action", "Value": action},
+                        ],
+                        "Value": 1,
+                        "Unit": "Count",
+                    },
+                    {
+                        "MetricName": "FailureByAction",
+                        "Dimensions": [
+                            {"Name": "Action", "Value": action},
+                        ],
+                        "Value": 1,
+                        "Unit": "Count",
+                    },
+                    {
+                        "MetricName": "FailureByClient",
+                        "Dimensions": [
+                            {"Name": "Client", "Value": client},
+                        ],
+                        "Value": 1,
+                        "Unit": "Count",
+                    },
+                ],
+            )
 
-                    ],
-                )
+
+
             except Exception as metric_err:
                 print("Metric write failed:", str(metric_err))
 

@@ -138,7 +138,7 @@ health_check_path = "/api/health"
 #############################################
 # CLOUDWATCH
 #############################################
-cloudwatchname = "/aws/route53/query-logs"
+cloudwatchname    = "/aws/route53/query-logs"
 retention_in_days = 30
 
 grafanacw                 = "/aws/ecs/grafana"
