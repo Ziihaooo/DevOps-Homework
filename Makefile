@@ -21,7 +21,7 @@ push:
 
 aws-oidc:
 	@echo "Configuring AWS OIDC..."
-	echo $$BITBUCKET_STEP_OIDC_TOKEN > /tmp/bb.token
+	echo $BITBUCKET_STEP_OIDC_TOKEN > /tmp/bb.token
 	export AWS_ROLE_ARN="arn:aws:iam::314146318322:role/BitbucketPipelineOIDCRole"; \
 	export AWS_WEB_IDENTITY_TOKEN_FILE="/tmp/bb.token"; \
 	export AWS_REGION="ap-southeast-2"

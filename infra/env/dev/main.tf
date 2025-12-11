@@ -1,7 +1,7 @@
 terraform {
   backend "s3" {
     bucket         = "terraforms3-zihao"
-    key            = "dev/week8/terraform/zihao/terraform.tfstate"
+    key            = "dev/week10/terraform/zihao/terraform.tfstate"
     region         = "ap-southeast-2"
     encrypt        = true
     dynamodb_table = "terraform-lock-table"
