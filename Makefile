@@ -19,13 +19,6 @@ login:
 push: 
 	docker push $(DOCKER_USERZ)/$(PROJECT_NAME):$(APP_TAG)
 
-aws-oidc:
-	@echo "Configuring AWS OIDC..."
-	echo $BITBUCKET_STEP_OIDC_TOKEN > /tmp/bb.token
-	export AWS_ROLE_ARN="arn:aws:iam::314146318322:role/BitbucketPipelineOIDCRole"; \
-	export AWS_WEB_IDENTITY_TOKEN_FILE="/tmp/bb.token"; \
-	export AWS_REGION="ap-southeast-2"
-
 tf-install:
 	@echo "Installing Terraform..."
 	wget -q https://releases.hashicorp.com/terraform/1.8.5/terraform_1.8.5_linux_amd64.zip
