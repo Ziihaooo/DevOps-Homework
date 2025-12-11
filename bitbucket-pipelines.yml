@@ -28,9 +28,20 @@ pipelines:
           oidc: true
           script:
             - apk add --no-cache bash curl unzip aws-cli jq make
-            - make aws-oidc
-            - make tf-install
-            - make tf-plan
+            - echo $BITBUCKET_STEP_OIDC_TOKEN > /tmp/bb.token
+            - export AWS_ROLE_ARN="arn:aws:iam::314146318322:role/BitbucketPipelineOIDCRole"
+            - export AWS_WEB_IDENTITY_TOKEN_FILE="/tmp/bb.token"
+            - export AWS_REGION="ap-southeast-2"
+            # Install Terraform
+            - wget https://releases.hashicorp.com/terraform/1.8.5/terraform_1.8.5_linux_amd64.zip
+            - unzip terraform_1.8.5_linux_amd64.zip
+            - mv terraform /usr/local/bin/
+
+            # Actual plan with backend
+            - cd infra/env/dev
+            - terraform init
+            - terraform plan -no-color
+
 
       - step:
           name: Terraform Apply

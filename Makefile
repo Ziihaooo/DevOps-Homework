@@ -32,6 +32,8 @@ tf-install:
 	unzip terraform_1.8.5_linux_amd64.zip
 	mv terraform /usr/local/bin/
 
+dev:
+	cd infra/env/dev
 tf-validate:
 	cd infra/env/dev && terraform init -backend=false && terraform validate
 
