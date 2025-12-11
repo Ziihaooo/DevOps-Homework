@@ -1,162 +1,212 @@
-# Week8 – Multi-Container Fargate Service (Nginx + Backend App)
+# Client Domains Automation System
+This repository implements an automated DNS provisioning workflow using AWS SQS, Lambda, Route 53, CloudWatch, and a containerised Grafana dashboard running on ECS Fargate.
 
-This project showcases a full DevOps workflow that includes:
-- A multi-container application (Nginx reverse proxy + backend API)
-- Local development using Docker Compose
-- AWS deployment using Terraform (IaC)
-- ECS Fargate service wired behind an Application Load Balancer
-- Automated CI/CD via Bitbucket Pipelines
-- CloudWatch log integration for both containers
-- Multi-stage Dockerfile for efficient builds
+The system eliminates manual DNS changes by engineers and introduces observability using structured logs and CloudWatch metrics.
 
-The application consists of **two containers** running inside a **single Fargate task**:
-1. **nginx** – serves static HTML assets and proxies API requests
-2. **app** – backend application running on port 8080
+## Project Overview
 
-Traffic flows from the ALB → nginx container → backend app container.
+This system automates DNS creation for client production domains.
 
+Workflow:
 
----
+A JSON message is published to Amazon SQS.
 
-## 1️⃣ Local Development
+AWS Lambda validates the payload and creates a Route53 DNS record.
 
-Local development is done using Docker Compose, allowing both containers to run exactly as they would inside ECS.
+Logs are written as structured JSON to CloudWatch.
 
-Run locally
-Command:
-make local-up
+Metrics (success/failure, action counts) are pushed to CloudWatch Metrics.
 
-Open the application
-http://localhost:8080
+A containerised Grafana dashboard visualises system behaviour.
 
-Stop local environemtn 
-Command:
-make local-down
+No manual Route 53 updates are required.
 
-## 2️⃣ AWS Deployment (Terraform)
-The infrastructure definition is stored under:
+## Architecture
+SQS → Lambda → Route 53 → CloudWatch Logs + Metrics → Grafana (ECS Fargate)
 
-infra/envs/dev
+## Deployment
+### 1. Build & Push Grafana Image
+make build
+make push
 
-Terraform provisions:
-
-route tables, NAT gateway
-
-Security groups for ALB and ECS
-
-ECS Cluster + Task Definition (multi-container)
-
-Fargate Service
-
-Application Load Balancer + target group
-
-CloudWatch Log Groups for both containers
-
-Deploy to AWS
-cd infra/envs/dev
+### 2. Deploy Terraform Infrastructure
+cd infra/env/dev
 terraform init
-terraform validate
 terraform apply
 
 
-After deployment, Terraform outputs the ALB DNS name, e.g.:
+Terraform provisions:
 
-http://week8-alb-xxxxxxx.ap-southeast-2.elb.amazonaws.com
+SQS Queue + DLQ
+
+Lambda + IAM execution role
+
+CloudWatch Log Group
+
+CloudWatch Metrics namespace
+
+ECS Fargate service running Grafana
+
+Public ALB (dev)
+
+## PIPELINES
+Pipelines automate image build & push, run Terraform validation, and provide manual triggers for apply and destroy.
+
+## Lambda Function
+
+The Lambda function executes the core logic:
+
+### Responsibilities
+
+Parse and validate SQS messages
+
+Enforce schema rules for:
+
+action, client, record_type, target_value
+
+source_env="staging"
+
+target_env="production"
+
+Construct FQDN:
+
+<client>.production.<base_domain>
 
 
-Open that link to access the live application.
+Create or update DNS records in Route 53
 
-## 3️⃣ Bitbucket Pipelines (CI/CD)
+Write structured JSON logs
 
-The pipeline runs automatically on pushes to my branch, as required.
+Emit CloudWatch custom metrics
 
-Pipeline stages:
+### Code Location
+lambda/dns_handler.py
 
-### Build container images
+## Sending Test Messages
+### Example Valid SQS Message
+{
+  "action": "add",
+  "client": "ikea",
+  "source_env": "staging",
+  "target_env": "production",
+  "record_type": "A",
+  "target_value": "1.2.3.4"
+}
 
-nginx image
+### Example Invalid Message (Triggers DLQ)
+{
+  "action": "add",
+  "client": "ikea"
+}
 
-backend app image
 
-push to Docker Hub using Bitbucket-secured variables
+Use AWS Console → SQS → “Send Message”.
 
-### Infrastructure validation stage
+## CloudWatch Logging
 
-terraform fmt -check
+Lambda produces structured JSON like:
 
-terraform validate
+{
+  "request_id": "abc-123",
+  "action": "add",
+  "client": "ikea",
+  "subdomain": "ikea.production.example.com",
+  "target_domain": "1.2.3.4",
+  "status": "success"
+}
 
-Ensures IaC correctness before deployment
 
-Depending on branch policies
+You can query via CloudWatch Logs Insights.
 
-### Manual : Terraform apply and terraform destory
+## Grafana Dashboard
 
-### its recommended you run this step on your local and then run on pipelines
-terraform apply -auto-approve
-terraform destroy -auto-approve
+Grafana is deployed to ECS Fargate and connects directly to CloudWatch as its data source.
 
-## Security
+### Dashboard Panels Include:
 
-No credentials or secrets are hard-coded
+Success vs Failure Time Series
 
-Sensitive values are managed through Bitbucket repository variables
+Success by Action
 
-This satisfies the marking criteria for CI/CD pipeline configuration.
+Failure by Action
 
-## 4️⃣ Architecture Overview
+Success by Client
 
-High-level system architecture:
+Error Log Table
 
-User accesses the ALB public DNS.
+Recent Requests
 
-ALB forwards traffic to port 80 of the running ECS task.
+### Dev Access (Public ALB)
 
-Nginx container either:
+Used ONLY for development → quick testing.
 
-Serves static HTML files, or
+### Prod Access (Internal ALB)
 
-Proxies /api/* requests to the backend on port 8080.
+Not exposed to the internet.
+Access via:
 
-Backend returns its response through nginx → ALB → client.
+AWS SSM Port Forwarding → EC2 (private subnet) → Internal ALB → Grafana
 
-Both containers share the same ENI because ECS uses the awsvpc networking mode.
+## DLQ Failure Handling
 
-## 5️⃣ How the System Fits Together
+If Lambda cannot process a message:
 
-Local: Docker Compose mirrors the same behavior as ECS (nginx → backend).
+SQS retries up to maxReceiveCount
 
-Images: Built in Pipelines and pushed to Docker Hub.
+If still failing → message is moved to Dead-Letter Queue
 
-Terraform: Provisions AWS infrastructure as the single source of truth.
+Engineers inspect message in DLQ
 
-Fargate: Runs the containers in a fully managed environment.
+Message remains until retention expiry unless manually reprocessed
 
-ALB: Exposes the service publicly and health-checks nginx.
+This prevents bad messages from blocking the system.
 
-This README explains the flow at a high level without exposing implementation details, exactly as required by the rubric.
+## IAM & Security
 
-## 6️⃣ Useful Commands
-Format Terraform
-terraform fmt
+IAM roles follow least privilege
 
-Destroy AWS resources
-terraform destroy
+Lambda can modify only the specific hosted zone
 
-## 7️⃣ Project Status
+ECS task role only accesses CloudWatch
 
-Everything in this project is fully operational:
+Pipeline OIDC role restricted to Terraform
 
-✔ Local multi-container Docker setup
-✔ Terraform-managed AWS infrastructure
-✔ ECS Fargate service running nginx + app
-✔ ALB routing healthy traffic
-✔ Bitbucket pipeline builds & validates
-✔ README meets all submission criteria
+No wildcard * admin policies (except required AWS service exceptions)
 
-## 8️⃣ Live URL Example
+No secrets are hardcoded or logged
 
-After deployment, your service is accessible at the ALB DNS name:
+## Production Recommendations
 
-http://week8-alb-xxxxx.ap-southeast-2.elb.amazonaws.com
-(Your actual DNS name will be shown in Terraform outputs.)
+Your current environment is development mode:
+
+Public ALB for easy testing
+
+Simple access to Grafana
+
+Easier debugging
+
+### For Production, change:
+
+Convert ALB → internal
+
+Add EC2 SSM Proxy Node
+
+Use SSM port forwarding for private access
+
+Strengthen IAM boundaries
+
+Enable CloudWatch alarms (e.g., DLQ > 0)
+
+## Grafana Dashboard Notes
+
+The infrastructure for Grafana (ECS task, ALB, IAM roles, and CloudWatch integration) is fully provisioned through Terraform.  
+However, the Grafana dashboard panels must be created manually within the Grafana UI.
+
+A separate Word document is provided with:
+
+- Step-by-step instructions for adding CloudWatch as a data source  
+- How to create each required panel (SuccessCount, FailureCount, SuccessByAction, etc.)  
+- Example queries and recommended dashboard layout  
+- Guidance on how to interpret the system metrics and logs  
+
+This README focuses on the system architecture and deployment workflow, while the accompanying Word file provides detailed instructions for building and using the Grafana dashboard.

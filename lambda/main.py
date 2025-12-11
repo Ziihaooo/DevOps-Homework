@@ -87,7 +87,8 @@ def lambda_handler(event, context):
         # -----------------------
         # Compute FQDN
         # -----------------------
-        fqdn = f"{client}.{base_domain}".rstrip(".")
+        fqdn = f"{client}.production.{base_domain}".rstrip(".")
+
         print(f"FQDN resolved as: {fqdn}")
 
         # -----------------------
