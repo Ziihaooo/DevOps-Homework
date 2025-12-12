@@ -66,8 +66,8 @@ crash.*.log
 
 # Exclude variable files with sensitive data
 #should not upload but I upload here for my future references
-#*.tfvars
-#*.tfvars.json
+*.tfvars
+*.tfvars.json
 
 # Ignore override files
 override.tf
