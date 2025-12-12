@@ -23,6 +23,20 @@ def log_json(action, client, fqdn, target, status, error=None):
     }
     logger.info(json.dumps(record))
 
+def safe_log_error(msg, raw=None):
+    """Ensure ANY error will be logged without breaking system"""
+    try:
+        log_json(
+            action="unknown",
+            client="unknown",
+            fqdn="unknown",
+            target=str(raw),
+            status="failure",
+            error=msg
+        )
+    except Exception as e:
+        print("Failed to write structured error log:", str(e))
+
 
 # -----------------------
 # AWS Clients
@@ -43,12 +57,17 @@ def lambda_handler(event, context):
         body = record.get("body")
         if not body:
             print("Skipping empty message")
+            safe_log_error("Empty message received")
             continue
 
+        # -----------------------
+        # JSON PARSE ERROR LOGGING
+        # -----------------------
         try:
             msg = json.loads(body)
-        except json.JSONDecodeError:
+        except json.JSONDecodeError as e:
             print("Invalid JSON:", body)
+            safe_log_error(f"JSON decode error: {str(e)}", body)
             continue
 
         print("Parsed message:", msg)
@@ -67,12 +86,15 @@ def lambda_handler(event, context):
 
         missing = [f for f in required if f not in msg]
         if missing:
+            safe_log_error(f"Missing fields: {missing}", msg)
             raise ValueError(f"Missing fields: {missing}")
 
         if msg["source_env"] != "staging":
+            safe_log_error("Invalid source_env (must be 'staging')", msg)
             raise ValueError("source_env must be 'staging'")
 
         if msg["target_env"] != "production":
+            safe_log_error("Invalid target_env (must be 'production')", msg)
             raise ValueError("target_env must be 'production'")
 
         action = msg["action"]
@@ -82,6 +104,7 @@ def lambda_handler(event, context):
         ttl = msg.get("ttl", 300)
 
         if action not in ["add", "update", "delete"]:
+            safe_log_error(f"Invalid action: {action}", msg)
             raise ValueError(f"Invalid action: {action}")
 
         # -----------------------
@@ -106,8 +129,6 @@ def lambda_handler(event, context):
             "TTL": ttl,
             "ResourceRecords": [{"Value": target_value}]
         }
-
-
 
         dns_change = {
             "Comment": f"Automated DNS {action} request",
@@ -137,36 +158,35 @@ def lambda_handler(event, context):
             # SAFE metric write
             try:
                 cloudwatch.put_metric_data(
-                Namespace="ClientDomainSystem",
-                MetricData=[
-                    {
-                        "MetricName": "SuccessCount",
-                        "Dimensions": [
-                            {"Name": "Client", "Value": client},
-                            {"Name": "Action", "Value": action},
-                        ],
-                        "Value": 1,
-                        "Unit": "Count",
-                    },
-                    {
-                        "MetricName": "SuccessByAction",
-                        "Dimensions": [
-                            {"Name": "Action", "Value": action},
-                        ],
-                        "Value": 1,
-                        "Unit": "Count",
-                    },
-                    {
-                        "MetricName": "SuccessByClient",
-                        "Dimensions": [
-                            {"Name": "Client", "Value": client},
-                        ],
-                        "Value": 1,
-                        "Unit": "Count",
-                    },
-                ],
-            )
-
+                    Namespace="ClientDomainSystem",
+                    MetricData=[
+                        {
+                            "MetricName": "SuccessCount",
+                            "Dimensions": [
+                                {"Name": "Client", "Value": client},
+                                {"Name": "Action", "Value": action},
+                            ],
+                            "Value": 1,
+                            "Unit": "Count",
+                        },
+                        {
+                            "MetricName": "SuccessByAction",
+                            "Dimensions": [
+                                {"Name": "Action", "Value": action},
+                            ],
+                            "Value": 1,
+                            "Unit": "Count",
+                        },
+                        {
+                            "MetricName": "SuccessByClient",
+                            "Dimensions": [
+                                {"Name": "Client", "Value": client},
+                            ],
+                            "Value": 1,
+                            "Unit": "Count",
+                        },
+                    ],
+                )
             except Exception as metric_err:
                 print("Metric write failed:", str(metric_err))
 
@@ -181,37 +201,35 @@ def lambda_handler(event, context):
             # Metric failure (safe)
             try:
                 cloudwatch.put_metric_data(
-                Namespace="ClientDomainSystem",
-                MetricData=[
-                    {
-                        "MetricName": "FailureCount",
-                        "Dimensions": [
-                            {"Name": "Client", "Value": client},
-                            {"Name": "Action", "Value": action},
-                        ],
-                        "Value": 1,
-                        "Unit": "Count",
-                    },
-                    {
-                        "MetricName": "FailureByAction",
-                        "Dimensions": [
-                            {"Name": "Action", "Value": action},
-                        ],
-                        "Value": 1,
-                        "Unit": "Count",
-                    },
-                    {
-                        "MetricName": "FailureByClient",
-                        "Dimensions": [
-                            {"Name": "Client", "Value": client},
-                        ],
-                        "Value": 1,
-                        "Unit": "Count",
-                    },
-                ],
-            )
-
-
+                    Namespace="ClientDomainSystem",
+                    MetricData=[
+                        {
+                            "MetricName": "FailureCount",
+                            "Dimensions": [
+                                {"Name": "Client", "Value": client},
+                                {"Name": "Action", "Value": action},
+                            ],
+                            "Value": 1,
+                            "Unit": "Count",
+                        },
+                        {
+                            "MetricName": "FailureByAction",
+                            "Dimensions": [
+                                {"Name": "Action", "Value": action},
+                            ],
+                            "Value": 1,
+                            "Unit": "Count",
+                        },
+                        {
+                            "MetricName": "FailureByClient",
+                            "Dimensions": [
+                                {"Name": "Client", "Value": client},
+                            ],
+                            "Value": 1,
+                            "Unit": "Count",
+                        },
+                    ],
+                )
 
             except Exception as metric_err:
                 print("Metric write failed:", str(metric_err))
