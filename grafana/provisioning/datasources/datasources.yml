@@ -1,0 +1,7 @@
+apiVersion: 1
+
+datasources:
+  - name: CloudWatch
+    type: cloudwatch
+    jsonData:
+      defaultRegion: ap-southeast-2

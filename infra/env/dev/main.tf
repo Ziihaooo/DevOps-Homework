@@ -308,6 +308,16 @@ module "ecs_grafana" {
 
   # Only one container
   containers = local.grafana_container
+  volumes = [
+  {
+    name = "grafana-data"
+    efs_volume_configuration = {
+      fileSystemId     = module.efs_grafana.id
+      rootDirectory    = "/"
+      transitEncryption = "ENABLED"
+    }
+  }
+]
 
   load_balancers = [{
     target_group_arn = module.alb.target_group_arn
@@ -340,6 +350,13 @@ locals {
         { name = "GF_SECURITY_ADMIN_PASSWORD", value = "admin" },
         { name = "AWS_REGION", value = "ap-southeast-2" }
       ]
+      mountPoints = [
+        {
+          containerPath = "/var/lib/grafana"
+          sourceVolume  = "grafana-data"
+          readOnly      = false
+        }
+      ]
 
       logConfiguration = {
         logDriver = "awslogs"
@@ -349,6 +366,8 @@ locals {
           awslogs-stream-prefix = "grafana"
         }
       }
+      command = []
+
     }
   ]
 }

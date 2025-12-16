@@ -1,0 +1,100 @@
+{
+  "id": null,
+  "title": "Client Domain System Dashboard",
+  "tags": ["client-domains"],
+  "timezone": "browser",
+  "schemaVersion": 36,
+  "version": 1,
+  "refresh": "10s",
+  "panels": [
+    {
+      "type": "timeseries",
+      "title": "Lambda Invocations Over Time",
+      "datasource": {
+        "type": "cloudwatch",
+        "uid": "cloudwatch"
+      },
+      "targets": [
+        {
+          "region": "ap-southeast-2",
+          "namespace": "ClientDomainSystem",
+          "metricName": "SuccessCount",
+          "statistics": ["Sum"],
+          "dimensions": {},
+          "period": 60,
+          "refId": "A"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 0, "w": 12, "h": 7 }
+    },
+    {
+      "type": "bargauge",
+      "title": "Success vs Failure (Count)",
+      "datasource": {
+        "type": "cloudwatch",
+        "uid": "cloudwatch"
+      },
+      "targets": [
+        {
+          "region": "ap-southeast-2",
+          "namespace": "ClientDomainSystem",
+          "metricName": "SuccessCount",
+          "statistics": ["Sum"],
+          "dimensions": {},
+          "refId": "A"
+        },
+        {
+          "region": "ap-southeast-2",
+          "namespace": "ClientDomainSystem",
+          "metricName": "FailureCount",
+          "statistics": ["Sum"],
+          "dimensions": {},
+          "refId": "B"
+        }
+      ],
+      "gridPos": { "x": 12, "y": 0, "w": 12, "h": 7 }
+    },
+    {
+      "type": "table",
+      "title": "Recent Error Logs",
+      "datasource": {
+        "type": "cloudwatch-logs",
+        "uid": "cloudwatch"
+      },
+      "targets": [
+        {
+          "queryType": "logsInsights",
+          "region": "ap-southeast-2",
+          "logGroupNames": ["/aws/lambda/client-domain-dns-function"],
+          "expression": "fields @timestamp, client, action, error_message\n| filter status = \"failure\"\n| sort @timestamp desc\n| limit 20",
+          "refId": "A"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 7, "w": 24, "h": 8 }
+    }
+  ],
+  "templating": {
+    "list": [
+      {
+        "name": "client",
+        "type": "query",
+        "datasource": {
+          "type": "cloudwatch-logs",
+          "uid": "cloudwatch"
+        },
+        "query": "fields client | filter client != '' | stats distinct(client)",
+        "refresh": 2
+      },
+      {
+        "name": "action",
+        "type": "query",
+        "datasource": {
+          "type": "cloudwatch-logs",
+          "uid": "cloudwatch"
+        },
+        "query": "fields action | filter action != '' | stats distinct(action)",
+        "refresh": 2
+      }
+    ]
+  }
+}
