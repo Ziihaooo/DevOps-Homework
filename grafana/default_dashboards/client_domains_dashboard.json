@@ -10,10 +10,7 @@
     {
       "type": "timeseries",
       "title": "Lambda Invocations Over Time",
-      "datasource": {
-        "type": "cloudwatch",
-        "uid": "cloudwatch"
-      },
+      "datasource": { "type": "cloudwatch", "uid": "cloudwatch" },
       "targets": [
         {
           "region": "ap-southeast-2",
@@ -23,6 +20,31 @@
           "dimensions": {},
           "period": 60,
           "refId": "A"
+        },
+        {
+          "region": "ap-southeast-2",
+          "namespace": "ClientDomainSystem",
+          "metricName": "FailureCount",
+          "statistics": ["Sum"],
+          "dimensions": {},
+          "period": 60,
+          "refId": "B"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "calculateField",
+          "options": {
+            "mode": "binary",
+            "binary": { "left": "A", "operator": "+", "right": "B" },
+            "alias": "Invocations"
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": { "A": true, "B": true }
+          }
         }
       ],
       "gridPos": { "x": 0, "y": 0, "w": 12, "h": 7 }
@@ -30,10 +52,7 @@
     {
       "type": "bargauge",
       "title": "Success vs Failure (Count)",
-      "datasource": {
-        "type": "cloudwatch",
-        "uid": "cloudwatch"
-      },
+      "datasource": { "type": "cloudwatch", "uid": "cloudwatch" },
       "targets": [
         {
           "region": "ap-southeast-2",
@@ -57,16 +76,13 @@
     {
       "type": "table",
       "title": "Recent Error Logs",
-      "datasource": {
-        "type": "cloudwatch-logs",
-        "uid": "cloudwatch"
-      },
+      "datasource": { "type": "cloudwatch-logs", "uid": "cloudwatch" },
       "targets": [
         {
           "queryType": "logsInsights",
           "region": "ap-southeast-2",
           "logGroupNames": ["/aws/lambda/client-domain-dns-function"],
-          "expression": "fields @timestamp, client, action, error_message\n| filter status = \"failure\"\n| sort @timestamp desc\n| limit 20",
+          "expression": "fields @timestamp, client, action, error_message\n| filter status = \"failure\"\n| filter client =~ /^$client$/ OR \"$client\" = \".*\"\n| filter action =~ /^$action$/ OR \"$action\" = \".*\"\n| sort @timestamp desc\n| limit 20",
           "refId": "A"
         }
       ],
@@ -78,22 +94,20 @@
       {
         "name": "client",
         "type": "query",
-        "datasource": {
-          "type": "cloudwatch-logs",
-          "uid": "cloudwatch"
-        },
+        "datasource": { "type": "cloudwatch-logs", "uid": "cloudwatch" },
         "query": "fields client | filter client != '' | stats distinct(client)",
-        "refresh": 2
+        "refresh": 2,
+        "includeAll": true,
+        "allValue": ".*"
       },
       {
         "name": "action",
         "type": "query",
-        "datasource": {
-          "type": "cloudwatch-logs",
-          "uid": "cloudwatch"
-        },
+        "datasource": { "type": "cloudwatch-logs", "uid": "cloudwatch" },
         "query": "fields action | filter action != '' | stats distinct(action)",
-        "refresh": 2
+        "refresh": 2,
+        "includeAll": true,
+        "allValue": ".*"
       }
     ]
   }
