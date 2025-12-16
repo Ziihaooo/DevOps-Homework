@@ -2,7 +2,6 @@
 export PROJECT_NAME := grafana-week9
 export APP_TAG := $(or $(VERSION), $(shell git rev-parse --short HEAD))
 export AWS_REGION := ap-southeast-2
-export DOCKER_USERZ ?= zavierrr
 export DOCKER_REPO ?= week9
 
 lint:
