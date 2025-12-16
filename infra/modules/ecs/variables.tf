@@ -33,18 +33,4 @@ variable "load_balancers" {
   default = []
 }
 
-variable "volumes" {
-  description = "ECS task volumes (e.g. EFS-backed volumes)"
-  type = list(object({
-    name = string
-
-    efs_volume_configuration = optional(object({
-      fileSystemId      = string
-      rootDirectory     = optional(string, "/")
-      transitEncryption = optional(string, "ENABLED")
-    }))
-  }))
-
-  default = []
-}
 

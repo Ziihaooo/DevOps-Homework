@@ -7,22 +7,6 @@ terraform {
     dynamodb_table = "terraform-lock-table"
   }
 }
-terraform {
-  required_providers {
-    grafana = {
-      source  = "grafana/grafana"
-      version = "~> 2.0"
-    }
-    aws = {
-      source  = "hashicorp/aws"
-      version = "~> 5.0"
-    }
-  }
-}
-provider "grafana" {
-  url  = var.grafana_url
-  auth = var.grafana_api_key
-}
 
 provider "aws" {
   region = "ap-southeast-2"
@@ -324,16 +308,6 @@ module "ecs_grafana" {
 
   # Only one container
   containers = local.grafana_container
-  volumes = [
-    {
-      name = "grafana-data"
-      efs_volume_configuration = {
-        fileSystemId      = module.efs_grafana.id
-        rootDirectory     = "/"
-        transitEncryption = "ENABLED"
-      }
-    }
-  ]
 
   load_balancers = [{
     target_group_arn = module.alb.target_group_arn
@@ -365,13 +339,6 @@ locals {
         { name = "GF_SECURITY_ADMIN_USER", value = "admin" },
         { name = "GF_SECURITY_ADMIN_PASSWORD", value = "admin" },
         { name = "AWS_REGION", value = "ap-southeast-2" }
-      ]
-      mountPoints = [
-        {
-          containerPath = "/var/lib/grafana"
-          sourceVolume  = "grafana-data"
-          readOnly      = false
-        }
       ]
 
       logConfiguration = {

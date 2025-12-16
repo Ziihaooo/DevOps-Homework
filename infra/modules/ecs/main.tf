@@ -20,22 +20,6 @@ resource "aws_ecs_task_definition" "this" {
   task_role_arn      = var.task_role_arn
 
   container_definitions = jsonencode(var.containers)
-
-  dynamic "volume" {
-    for_each = var.volumes
-    content {
-      name = volume.value.name
-
-      dynamic "efs_volume_configuration" {
-        for_each = lookup(volume.value, "efs_volume_configuration", null) != null ? [1] : []
-        content {
-          file_system_id     = volume.value.efs_volume_configuration.fileSystemId
-          root_directory     = lookup(volume.value.efs_volume_configuration, "rootDirectory", "/")
-          transit_encryption = lookup(volume.value.efs_volume_configuration, "transitEncryption", "ENABLED")
-        }
-      }
-    }
-  }
 }
 
 

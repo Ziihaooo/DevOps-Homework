@@ -164,4 +164,3 @@ variable "grafana_image" {}
 variable "ecs_cpu" {}
 variable "ecs_memory" {}
 variable "ecs_desired_count" {}
-

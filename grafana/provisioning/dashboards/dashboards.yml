@@ -4,7 +4,7 @@ providers:
   - name: 'Client Domain Dashboards'
     folder: 'Client Domains'
     type: file
-    disableDeletion: false
-    editable: true
+    disableDeletion: True
+    editable: false
     options:
       path: /var/lib/grafana/dashboards
