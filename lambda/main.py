@@ -24,7 +24,7 @@ def log_json(action, client, fqdn, target, status, error=None):
     logger.info(json.dumps(record))
 
 def safe_log_error(msg, raw=None):
-    """Ensure ANY error will be logged without breaking system"""
+    """Ensure ANY error will be logged and pushed as a metric"""
     try:
         log_json(
             action="unknown",
@@ -33,6 +33,16 @@ def safe_log_error(msg, raw=None):
             target=str(raw),
             status="failure",
             error=msg
+        )
+        # Push FailureCount to CloudWatch so it shows up in Grafana
+        cw = boto3.client("cloudwatch")
+        cw.put_metric_data(
+            Namespace="ClientDomainSystem",
+            MetricData=[{
+                "MetricName": "FailureCount",
+                "Value": 1,
+                "Unit": "Count"
+            }]
         )
     except Exception as e:
         print("Failed to write structured error log:", str(e))
@@ -198,7 +208,7 @@ def lambda_handler(event, context):
             # Structured log (failure)
             log_json(action, client, fqdn, target_value, "failure", err)
 
-            # Metric failure (safe)
+            # Metric failure
             try:
                 cloudwatch.put_metric_data(
                     Namespace="ClientDomainSystem",

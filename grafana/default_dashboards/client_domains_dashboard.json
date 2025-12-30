@@ -1,114 +1,230 @@
 {
-  "id": null,
-  "title": "Client Domain System Dashboard",
-  "tags": ["client-domains"],
-  "timezone": "browser",
-  "schemaVersion": 36,
-  "version": 1,
-  "refresh": "10s",
-  "panels": [
-    {
-      "type": "timeseries",
-      "title": "Lambda Invocations Over Time",
-      "datasource": { "type": "cloudwatch", "uid": "cloudwatch" },
-      "targets": [
-        {
-          "region": "ap-southeast-2",
-          "namespace": "ClientDomainSystem",
-          "metricName": "SuccessCount",
-          "statistics": ["Sum"],
-          "dimensions": {},
-          "period": 60,
-          "refId": "A"
-        },
-        {
-          "region": "ap-southeast-2",
-          "namespace": "ClientDomainSystem",
-          "metricName": "FailureCount",
-          "statistics": ["Sum"],
-          "dimensions": {},
-          "period": 60,
-          "refId": "B"
-        }
-      ],
-      "transformations": [
-        {
-          "id": "calculateField",
-          "options": {
-            "mode": "binary",
-            "binary": { "left": "A", "operator": "+", "right": "B" },
-            "alias": "Invocations"
-          }
-        },
-        {
-          "id": "organize",
-          "options": {
-            "excludeByName": { "A": true, "B": true }
-          }
-        }
-      ],
-      "gridPos": { "x": 0, "y": 0, "w": 12, "h": 7 }
-    },
-    {
-      "type": "bargauge",
-      "title": "Success vs Failure (Count)",
-      "datasource": { "type": "cloudwatch", "uid": "cloudwatch" },
-      "targets": [
-        {
-          "region": "ap-southeast-2",
-          "namespace": "ClientDomainSystem",
-          "metricName": "SuccessCount",
-          "statistics": ["Sum"],
-          "dimensions": {},
-          "refId": "A"
-        },
-        {
-          "region": "ap-southeast-2",
-          "namespace": "ClientDomainSystem",
-          "metricName": "FailureCount",
-          "statistics": ["Sum"],
-          "dimensions": {},
-          "refId": "B"
-        }
-      ],
-      "gridPos": { "x": 12, "y": 0, "w": 12, "h": 7 }
-    },
-    {
-      "type": "table",
-      "title": "Recent Error Logs",
-      "datasource": { "type": "cloudwatch-logs", "uid": "cloudwatch" },
-      "targets": [
-        {
-          "queryType": "logsInsights",
-          "region": "ap-southeast-2",
-          "logGroupNames": ["/aws/lambda/client-domain-dns-function"],
-          "expression": "fields @timestamp, client, action, error_message\n| filter status = \"failure\"\n| filter client =~ /^$client$/ OR \"$client\" = \".*\"\n| filter action =~ /^$action$/ OR \"$action\" = \".*\"\n| sort @timestamp desc\n| limit 20",
-          "refId": "A"
-        }
-      ],
-      "gridPos": { "x": 0, "y": 7, "w": 24, "h": 8 }
-    }
-  ],
-  "templating": {
+  "annotations": {
     "list": [
       {
-        "name": "client",
-        "type": "query",
-        "datasource": { "type": "cloudwatch-logs", "uid": "cloudwatch" },
-        "query": "fields client | filter client != '' | stats distinct(client)",
-        "refresh": 2,
-        "includeAll": true,
-        "allValue": ".*"
-      },
-      {
-        "name": "action",
-        "type": "query",
-        "datasource": { "type": "cloudwatch-logs", "uid": "cloudwatch" },
-        "query": "fields action | filter action != '' | stats distinct(action)",
-        "refresh": 2,
-        "includeAll": true,
-        "allValue": ".*"
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
       }
     ]
-  }
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "links": [],
+  "panels": [
+    {
+      "datasource": {
+        "type": "cloudwatch",
+        "uid": "P034F075C744B399F"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
+      "id": 5,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "sum"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "text": {},
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "10.4.3",
+      "targets": [
+        {
+          "datasource": {
+            "type": "cloudwatch",
+            "uid": "P034F075C744B399F"
+          },
+          "dimensions": {},
+          "expression": "",
+          "hide": false,
+          "id": "",
+          "label": "",
+          "logGroups": [],
+          "matchExact": false,
+          "metricEditorMode": 0,
+          "metricName": "SuccessCount",
+          "metricQueryType": 0,
+          "namespace": "ClientDomainSystem",
+          "period": "",
+          "queryMode": "Metrics",
+          "refId": "A",
+          "region": "ap-southeast-2",
+          "sqlExpression": "",
+          "statistic": "Sum"
+        }
+      ],
+      "title": "Successful VS Failed Requests",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "cloudwatch",
+        "uid": "P034F075C744B399F"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 8
+      },
+      "id": 4,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "cloudwatch",
+            "uid": "P034F075C744B399F"
+          },
+          "dimensions": {
+            "FunctionName": "client-domain-dns-function"
+          },
+          "expression": "",
+          "id": "",
+          "label": "",
+          "logGroups": [],
+          "matchExact": true,
+          "metricEditorMode": 0,
+          "metricName": "Invocations",
+          "metricQueryType": 0,
+          "namespace": "AWS/Lambda",
+          "period": "",
+          "queryMode": "Metrics",
+          "refId": "A",
+          "region": "ap-southeast-2",
+          "sqlExpression": "",
+          "statistic": "Sum"
+        }
+      ],
+      "title": "Lambda Invocations Over Time",
+      "type": "timeseries"
+    }
+  ],
+  "refresh": "10s",
+  "schemaVersion": 39,
+  "tags": [
+    "client-domains"
+  ],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "Client Domain System Dashboard",
+  "uid": "af8mtj2kxob9cf",
+  "version": 1,
+  "weekStart": ""
 }
