@@ -300,7 +300,7 @@ task_inline_policies = [
 #############################################
 lb_container_name = "grafana"
 lb_container_port = 3000
-grafana_image     = "zavierrr/grafana-week9:28eb16e"
+grafana_image     = "zavierrr/grafana-week9:695e93a"
 ecs_cpu           = 256
 ecs_memory        = 512
 ecs_desired_count = 1
