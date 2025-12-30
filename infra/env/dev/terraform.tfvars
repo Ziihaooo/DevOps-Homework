@@ -285,7 +285,9 @@ task_inline_policies = [
             "logs:DescribeLogGroups",
             "logs:DescribeLogStreams",
             "logs:GetLogEvents",
-            "logs:FilterLogEvents"
+            "logs:FilterLogEvents",
+            "logs:StartQuery",
+            "logs:GetQueryResults"
           ]
           Resource = "*"
         }
@@ -300,7 +302,7 @@ task_inline_policies = [
 #############################################
 lb_container_name = "grafana"
 lb_container_port = 3000
-grafana_image     = "zavierrr/grafana-week9:695e93a"
+grafana_image     = "zavierrr/grafana-week9:4275cef"
 ecs_cpu           = 256
 ecs_memory        = 512
 ecs_desired_count = 1

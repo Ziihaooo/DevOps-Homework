@@ -25,7 +25,94 @@
         "type": "cloudwatch",
         "uid": "P034F075C744B399F"
       },
-      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
+      "id": 6,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true
+      },
+      "pluginVersion": "10.4.3",
+      "targets": [
+        {
+          "datasource": {
+            "type": "cloudwatch",
+            "uid": "P034F075C744B399F"
+          },
+          "dimensions": {},
+          "expression": "fields @timestamp, client, action, error_message\n| filter @message like /failure/\n| parse @message /\"client\":\\s*\"?(?<client>[^\",}]+)\"?/\n| parse @message /\"action\":\\s*\"?(?<action>[^\",}]+)\"?/\n| parse @message /\"error_message\":\\s*\"?(?<error_message>[^\"{}]+)\"?/\n| sort @timestamp desc\n| limit 10",
+          "id": "",
+          "label": "",
+          "logGroups": [
+            {
+              "accountId": "314146318322",
+              "arn": "arn:aws:logs:ap-southeast-2:314146318322:log-group:/aws/lambda/client-domain-dns-function:*",
+              "name": "/aws/lambda/client-domain-dns-function"
+            }
+          ],
+          "matchExact": true,
+          "metricEditorMode": 0,
+          "metricName": "",
+          "metricQueryType": 0,
+          "namespace": "",
+          "period": "",
+          "queryMode": "Logs",
+          "refId": "A",
+          "region": "ap-southeast-2",
+          "sqlExpression": "",
+          "statistic": "Average",
+          "statsGroups": []
+        }
+      ],
+      "title": "Recent Error logs",
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "cloudwatch",
+        "uid": "P034F075C744B399F"
+      },
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -52,7 +139,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 0
+        "y": 8
       },
       "id": 5,
       "options": {
@@ -68,7 +155,6 @@
           "values": false
         },
         "showPercentChange": false,
-        "text": {},
         "textMode": "auto",
         "wideLayout": true
       },
@@ -81,11 +167,10 @@
           },
           "dimensions": {},
           "expression": "",
-          "hide": false,
           "id": "",
           "label": "",
           "logGroups": [],
-          "matchExact": false,
+          "matchExact": true,
           "metricEditorMode": 0,
           "metricName": "SuccessCount",
           "metricQueryType": 0,
@@ -93,12 +178,35 @@
           "period": "",
           "queryMode": "Metrics",
           "refId": "A",
-          "region": "ap-southeast-2",
+          "region": "default",
+          "sqlExpression": "",
+          "statistic": "Sum"
+        },
+        {
+          "datasource": {
+            "type": "cloudwatch",
+            "uid": "P034F075C744B399F"
+          },
+          "dimensions": {},
+          "expression": "",
+          "hide": false,
+          "id": "",
+          "label": "",
+          "logGroups": [],
+          "matchExact": true,
+          "metricEditorMode": 0,
+          "metricName": "FailureCount",
+          "metricQueryType": 0,
+          "namespace": "ClientDomainSystem",
+          "period": "",
+          "queryMode": "Metrics",
+          "refId": "B",
+          "region": "default",
           "sqlExpression": "",
           "statistic": "Sum"
         }
       ],
-      "title": "Successful VS Failed Requests",
+      "title": "Panel Title",
       "type": "stat"
     },
     {
@@ -164,7 +272,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 8
+        "y": 16
       },
       "id": 4,
       "options": {
@@ -209,17 +317,81 @@
       "type": "timeseries"
     }
   ],
-  "refresh": "10s",
+  "refresh": "",
   "schemaVersion": 39,
   "tags": [
     "client-domains"
   ],
   "templating": {
-    "list": []
+    "list": [
+      {
+        "current": {
+          "selected": true,
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
+        "definition": "",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Select Client",
+        "multi": true,
+        "name": "client",
+        "options": [],
+        "query": {
+          "dimensionFilters": {},
+          "dimensionKey": "Client",
+          "metricName": "SuccessCount",
+          "namespace": "ClientDomainSystem",
+          "queryType": "dimensionValues",
+          "refId": "CloudWatchVariableQueryEditor-VariableQuery",
+          "region": "ap-southeast-2"
+        },
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "type": "query"
+      },
+      {
+        "current": {
+          "selected": true,
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
+        "definition": "",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Select Action",
+        "multi": true,
+        "name": "action",
+        "options": [],
+        "query": {
+          "dimensionKey": "Action",
+          "metricName": "SuccessCount",
+          "namespace": "ClientDomainSystem",
+          "queryType": "dimensionValues",
+          "refId": "CloudWatchVariableQueryEditor-VariableQuery",
+          "region": "ap-southeast-2"
+        },
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "type": "query"
+      }
+    ]
   },
   "time": {
-    "from": "now-1h",
-    "to": "now"
+    "from": "2025-12-29T20:46:07.772Z",
+    "to": "2025-12-30T20:46:07.772Z"
   },
   "timepicker": {},
   "timezone": "browser",

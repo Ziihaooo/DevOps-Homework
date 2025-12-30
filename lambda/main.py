@@ -5,13 +5,17 @@ import uuid
 import logging
 
 # -----------------------
-# Logging setup
+# Logging setup (AC3)
 # -----------------------
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
+# Initialize AWS Clients
+route53 = boto3.client("route53")
+cloudwatch = boto3.client("cloudwatch")
+
 def log_json(action, client, fqdn, target, status, error=None):
-    """Structured JSON logging for CloudWatch Logs"""
+    """Structured JSON logging for CloudWatch Logs (AC3 Requirement)"""
     record = {
         "request_id": str(uuid.uuid4()),
         "action": action,
@@ -23,89 +27,97 @@ def log_json(action, client, fqdn, target, status, error=None):
     }
     logger.info(json.dumps(record))
 
-def safe_log_error(msg, raw=None):
-    """Ensure ANY error will be logged and pushed as a metric"""
+def emit_metrics(status_type, client, action):
+    """
+    Reports 6 COMPLETELY INDEPENDENT metrics.
+    Each has a unique name so they won't mix in Grafana.
+    """
+    namespace = "ClientDomainSystem"
+    
     try:
-        log_json(
-            action="unknown",
-            client="unknown",
-            fqdn="unknown",
-            target=str(raw),
-            status="failure",
-            error=msg
-        )
-        # Push FailureCount to CloudWatch so it shows up in Grafana
-        cw = boto3.client("cloudwatch")
-        cw.put_metric_data(
-            Namespace="ClientDomainSystem",
-            MetricData=[{
-                "MetricName": "FailureCount",
-                "Value": 1,
-                "Unit": "Count"
-            }]
+        cloudwatch.put_metric_data(
+            Namespace=namespace,
+            MetricData=[
+                # 1. TOTAL (The big number you want)
+                # In Grafana: Metric Name = SuccessCount or FailureCount
+                {
+                    "MetricName": f"{status_type}Count",
+                    "Value": 1,
+                    "Unit": "Count"
+                },
+                # 2. BY CLIENT (Independent ID)
+                # In Grafana: Metric Name = SuccessByClient or FailureByClient
+                {
+                    "MetricName": f"{status_type}ByClient",
+                    "Dimensions": [{"Name": "Client", "Value": client}],
+                    "Value": 1,
+                    "Unit": "Count"
+                },
+                # 3. BY ACTION (Independent ID)
+                # In Grafana: Metric Name = SuccessByAction or FailureByAction
+                {
+                    "MetricName": f"{status_type}ByAction",
+                    "Dimensions": [{"Name": "Action", "Value": action}],
+                    "Value": 1,
+                    "Unit": "Count"
+                }
+            ]
         )
     except Exception as e:
-        print("Failed to write structured error log:", str(e))
+        print(f"Failed to emit metrics: {str(e)}")
 
+def safe_log_error(msg, raw_payload=None):
+    """Logs error and emits failure metrics before raising exception for SQS/DLQ"""
+    client = "unknown"
+    action = "unknown"
+    
+    if isinstance(raw_payload, dict):
+        client = raw_payload.get("client", "unknown")
+        action = raw_payload.get("action", "unknown")
 
-# -----------------------
-# AWS Clients
-# -----------------------
-route53 = boto3.client("route53")
-cloudwatch = boto3.client("cloudwatch")
-
+    log_json(
+        action=action,
+        client=client,
+        fqdn="unknown",
+        target=str(raw_payload),
+        status="failure",
+        error=msg
+    )
+    
+    emit_metrics("Failure", client, action)
 
 def lambda_handler(event, context):
-
+    """
+    Main entry point for SQS Trigger (AC1 & AC2)
+    """
     print("Raw event:", json.dumps(event))
-
     hosted_zone_id = os.environ["HOSTED_ZONE_ID"]
     base_domain = os.environ["BASE_DOMAIN"]
 
     for record in event.get("Records", []):
-
         body = record.get("body")
         if not body:
-            print("Skipping empty message")
             safe_log_error("Empty message received")
-            continue
+            raise ValueError("Empty SQS message")
 
-        # -----------------------
-        # JSON PARSE ERROR LOGGING
-        # -----------------------
+        # 1. Parse JSON (AC1)
         try:
             msg = json.loads(body)
         except json.JSONDecodeError as e:
-            print("Invalid JSON:", body)
             safe_log_error(f"JSON decode error: {str(e)}", body)
-            continue
+            raise e
 
-        print("Parsed message:", msg)
-
-        # -----------------------
-        # Validate required fields
-        # -----------------------
-        required = [
-            "action",
-            "client",
-            "source_env",
-            "target_env",
-            "record_type",
-            "target_value"
-        ]
-
+        # 2. Validate Schema (AC1)
+        required = ["action", "client", "source_env", "target_env", "record_type", "target_value"]
         missing = [f for f in required if f not in msg]
         if missing:
             safe_log_error(f"Missing fields: {missing}", msg)
-            raise ValueError(f"Missing fields: {missing}")
+            raise ValueError(f"Payload missing fields: {missing}")
 
-        if msg["source_env"] != "staging":
-            safe_log_error("Invalid source_env (must be 'staging')", msg)
-            raise ValueError("source_env must be 'staging'")
-
-        if msg["target_env"] != "production":
-            safe_log_error("Invalid target_env (must be 'production')", msg)
-            raise ValueError("target_env must be 'production'")
+        # 3. Environment & Action Logic
+        if msg["source_env"] != "staging" or msg["target_env"] != "production":
+            safe_log_error("Invalid environment routing", msg)
+            raise ValueError("Logic Error: source_env must be staging and target_env must be production")
 
         action = msg["action"]
         client = msg["client"]
@@ -114,136 +126,41 @@ def lambda_handler(event, context):
         ttl = msg.get("ttl", 300)
 
         if action not in ["add", "update", "delete"]:
-            safe_log_error(f"Invalid action: {action}", msg)
-            raise ValueError(f"Invalid action: {action}")
+            safe_log_error(f"Invalid action type: {action}", msg)
+            raise ValueError(f"Unsupported action: {action}")
 
-        # -----------------------
-        # Compute FQDN
-        # -----------------------
+        # 4. Compute FQDN (AC2)
         fqdn = f"{client}.production.{base_domain}".rstrip(".")
-
-        print(f"FQDN resolved as: {fqdn}")
-
-        # -----------------------
-        # Determine R53 change type
-        # -----------------------
-        route53_action = {
-            "add": "CREATE",
-            "update": "UPSERT",
-            "delete": "DELETE"
-        }[action]
-
-        rrset = {
-            "Name": fqdn,
-            "Type": record_type,
-            "TTL": ttl,
-            "ResourceRecords": [{"Value": target_value}]
-        }
+        route53_action = {"add": "CREATE", "update": "UPSERT", "delete": "DELETE"}[action]
 
         dns_change = {
             "Comment": f"Automated DNS {action} request",
-            "Changes": [
-                {
-                    "Action": route53_action,
-                    "ResourceRecordSet": rrset
+            "Changes": [{
+                "Action": route53_action,
+                "ResourceRecordSet": {
+                    "Name": fqdn,
+                    "Type": record_type,
+                    "TTL": ttl,
+                    "ResourceRecords": [{"Value": target_value}]
                 }
-            ]
+            }]
         }
 
-        print("Submitting Route53 change:", json.dumps(dns_change))
-
-        # -----------------------
-        # EXECUTE ROUTE53 CHANGE
-        # -----------------------
+        # 5. Execute Route 53 Change (AC2)
         try:
-            response = route53.change_resource_record_sets(
+            route53.change_resource_record_sets(
                 HostedZoneId=hosted_zone_id,
                 ChangeBatch=dns_change
             )
-            print("Route53 Response:", response)
-
-            # Structured log (success)
+            # AC3 Logging
             log_json(action, client, fqdn, target_value, "success")
-
-            # SAFE metric write
-            try:
-                cloudwatch.put_metric_data(
-                    Namespace="ClientDomainSystem",
-                    MetricData=[
-                        {
-                            "MetricName": "SuccessCount",
-                            "Dimensions": [
-                                {"Name": "Client", "Value": client},
-                                {"Name": "Action", "Value": action},
-                            ],
-                            "Value": 1,
-                            "Unit": "Count",
-                        },
-                        {
-                            "MetricName": "SuccessByAction",
-                            "Dimensions": [
-                                {"Name": "Action", "Value": action},
-                            ],
-                            "Value": 1,
-                            "Unit": "Count",
-                        },
-                        {
-                            "MetricName": "SuccessByClient",
-                            "Dimensions": [
-                                {"Name": "Client", "Value": client},
-                            ],
-                            "Value": 1,
-                            "Unit": "Count",
-                        },
-                    ],
-                )
-            except Exception as metric_err:
-                print("Metric write failed:", str(metric_err))
+            # AC4 Metrics
+            emit_metrics("Success", client, action)
 
         except Exception as ex:
-
-            err = str(ex)
-            print("Route53 Error:", err)
-
-            # Structured log (failure)
-            log_json(action, client, fqdn, target_value, "failure", err)
-
-            # Metric failure
-            try:
-                cloudwatch.put_metric_data(
-                    Namespace="ClientDomainSystem",
-                    MetricData=[
-                        {
-                            "MetricName": "FailureCount",
-                            "Dimensions": [
-                                {"Name": "Client", "Value": client},
-                                {"Name": "Action", "Value": action},
-                            ],
-                            "Value": 1,
-                            "Unit": "Count",
-                        },
-                        {
-                            "MetricName": "FailureByAction",
-                            "Dimensions": [
-                                {"Name": "Action", "Value": action},
-                            ],
-                            "Value": 1,
-                            "Unit": "Count",
-                        },
-                        {
-                            "MetricName": "FailureByClient",
-                            "Dimensions": [
-                                {"Name": "Client", "Value": client},
-                            ],
-                            "Value": 1,
-                            "Unit": "Count",
-                        },
-                    ],
-                )
-
-            except Exception as metric_err:
-                print("Metric write failed:", str(metric_err))
-
+            # If Route 53 fails (e.g., rate limit or invalid target), 
+            # log failure, record metric, and raise to trigger SQS retry/DLQ
+            safe_log_error(str(ex), msg)
             raise ex
 
-    return {"status": "ok", "message": "All SQS messages processed"}
+    return {"status": "ok", "message": "All messages processed successfully"}
