@@ -2,12 +2,10 @@ FROM grafana/grafana:10.4.3
 
 USER root
 
-# 默认 dashboards（每次起容器都会加载）
-COPY default_dashboards /var/lib/grafana/dashboards
-
-# provisioning（datasource + dashboard provider）
-COPY provisioning /etc/grafana/provisioning
-
+# Copy provisioning configurations
+COPY ./provisioning/ /etc/grafana/provisioning/
+# Copy your dashboard JSON into the location defined in dashboards.yml
+COPY ./default_dashboards/client_domains_dashboard.json /etc/grafana/provisioning/dashboards/
 USER grafana
 
 EXPOSE 3000
