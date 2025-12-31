@@ -29,35 +29,23 @@ def log_json(action, client, fqdn, target, status, error=None):
 
 def emit_metrics(status_type, client, action):
     """
-    Reports 6 COMPLETELY INDEPENDENT metrics.
-    Each has a unique name so they won't mix in Grafana.
+    Reports a single consistent metric with dual dimensions.
+    This allows Grafana to aggregate (Sum) the data for any filter combination.
     """
     namespace = "ClientDomainSystem"
+    # Unified metric name: SuccessCount or FailureCount
+    metric_name = f"{status_type}Count" 
     
     try:
         cloudwatch.put_metric_data(
             Namespace=namespace,
             MetricData=[
-                # 1. TOTAL (The big number you want)
-                # In Grafana: Metric Name = SuccessCount or FailureCount
                 {
-                    "MetricName": f"{status_type}Count",
-                    "Value": 1,
-                    "Unit": "Count"
-                },
-                # 2. BY CLIENT (Independent ID)
-                # In Grafana: Metric Name = SuccessByClient or FailureByClient
-                {
-                    "MetricName": f"{status_type}ByClient",
-                    "Dimensions": [{"Name": "Client", "Value": client}],
-                    "Value": 1,
-                    "Unit": "Count"
-                },
-                # 3. BY ACTION (Independent ID)
-                # In Grafana: Metric Name = SuccessByAction or FailureByAction
-                {
-                    "MetricName": f"{status_type}ByAction",
-                    "Dimensions": [{"Name": "Action", "Value": action}],
+                    "MetricName": metric_name,
+                    "Dimensions": [
+                        {"Name": "Client", "Value": client},
+                        {"Name": "Action", "Value": action}
+                    ],
                     "Value": 1,
                     "Unit": "Count"
                 }
@@ -65,7 +53,7 @@ def emit_metrics(status_type, client, action):
         )
     except Exception as e:
         print(f"Failed to emit metrics: {str(e)}")
-
+        
 def safe_log_error(msg, raw_payload=None):
     """Logs error and emits failure metrics before raising exception for SQS/DLQ"""
     client = "unknown"

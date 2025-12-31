@@ -81,7 +81,7 @@
             "uid": "P034F075C744B399F"
           },
           "dimensions": {},
-          "expression": "fields @timestamp, client, action, error_message\n| filter @message like /failure/\n| parse @message /\"client\":\\s*\"?(?<client>[^\",}]+)\"?/\n| parse @message /\"action\":\\s*\"?(?<action>[^\",}]+)\"?/\n| parse @message /\"error_message\":\\s*\"?(?<error_message>[^\"{}]+)\"?/\n| sort @timestamp desc\n| limit 10",
+          "expression": "fields @timestamp, client, action, error_message\n| filter @message like /failure/\n| parse @message /\"client\":\\s*\"?(?<client>[^\",}]+)\"?/\n| parse @message /\"action\":\\s*\"?(?<action>[^\",}]+)\"?/\n| parse @message /\"error_message\":\\s*\"?(?<error_message>[^\"{}]+)\"?/\n\n| filter client =~ /$client/\n| filter action =~ /$action/\n\n| sort @timestamp desc\n| limit 10",
           "id": "",
           "label": "",
           "logGroups": [
@@ -165,12 +165,15 @@
             "type": "cloudwatch",
             "uid": "P034F075C744B399F"
           },
-          "dimensions": {},
+          "dimensions": {
+            "Action": "$action",
+            "Client": "$client"
+          },
           "expression": "",
           "id": "",
           "label": "",
           "logGroups": [],
-          "matchExact": true,
+          "matchExact": false,
           "metricEditorMode": 0,
           "metricName": "SuccessCount",
           "metricQueryType": 0,
@@ -187,13 +190,16 @@
             "type": "cloudwatch",
             "uid": "P034F075C744B399F"
           },
-          "dimensions": {},
+          "dimensions": {
+            "Action": "$action",
+            "Client": "$client"
+          },
           "expression": "",
           "hide": false,
           "id": "",
           "label": "",
           "logGroups": [],
-          "matchExact": true,
+          "matchExact": false,
           "metricEditorMode": 0,
           "metricName": "FailureCount",
           "metricQueryType": 0,
@@ -206,7 +212,7 @@
           "statistic": "Sum"
         }
       ],
-      "title": "Panel Title",
+      "title": "Successful VS Failed Requests",
       "type": "stat"
     },
     {
@@ -342,7 +348,6 @@
         "name": "client",
         "options": [],
         "query": {
-          "dimensionFilters": {},
           "dimensionKey": "Client",
           "metricName": "SuccessCount",
           "namespace": "ClientDomainSystem",
@@ -360,10 +365,10 @@
         "current": {
           "selected": true,
           "text": [
-            "All"
+            "add"
           ],
           "value": [
-            "$__all"
+            "add"
           ]
         },
         "definition": "",
@@ -390,8 +395,8 @@
     ]
   },
   "time": {
-    "from": "2025-12-29T20:46:07.772Z",
-    "to": "2025-12-30T20:46:07.772Z"
+    "from": "now-1h",
+    "to": "now"
   },
   "timepicker": {},
   "timezone": "browser",
