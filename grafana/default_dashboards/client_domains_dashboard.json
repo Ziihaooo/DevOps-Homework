@@ -334,11 +334,15 @@
         "current": {
           "selected": true,
           "text": [
-            "All"
+            "test2"
           ],
           "value": [
-            "$__all"
+            "test2"
           ]
+        },
+        "datasource": {
+          "type": "cloudwatch",
+          "uid": "P034F075C744B399F"
         },
         "definition": "",
         "hide": 0,
@@ -355,7 +359,7 @@
           "refId": "CloudWatchVariableQueryEditor-VariableQuery",
           "region": "ap-southeast-2"
         },
-        "refresh": 1,
+        "refresh": 2,
         "regex": "",
         "skipUrlSync": false,
         "sort": 0,
@@ -365,11 +369,15 @@
         "current": {
           "selected": true,
           "text": [
-            "add"
+            "All"
           ],
           "value": [
-            "add"
+            "$__all"
           ]
+        },
+        "datasource": {
+          "type": "cloudwatch",
+          "uid": "P034F075C744B399F"
         },
         "definition": "",
         "hide": 0,
@@ -379,6 +387,9 @@
         "name": "action",
         "options": [],
         "query": {
+          "dimensionFilters": {
+            "Client": "$client"
+          },
           "dimensionKey": "Action",
           "metricName": "SuccessCount",
           "namespace": "ClientDomainSystem",
@@ -386,7 +397,7 @@
           "refId": "CloudWatchVariableQueryEditor-VariableQuery",
           "region": "ap-southeast-2"
         },
-        "refresh": 1,
+        "refresh": 2,
         "regex": "",
         "skipUrlSync": false,
         "sort": 0,
