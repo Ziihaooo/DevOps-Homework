@@ -199,14 +199,18 @@ Enable CloudWatch alarms (e.g., DLQ > 0)
 
 ## Grafana Dashboard Notes
 
-The infrastructure for Grafana (ECS task, ALB, IAM roles, and CloudWatch integration) is fully provisioned through Terraform.  
-However, the Grafana dashboard panels must be created manually within the Grafana UI.
+The entire Grafana monitoring stack—including the ECS Fargate task, Application Load Balancer, IAM roles, and the Dashboard itself—is fully provisioned through Terraform. There is no manual setup required for the dashboard or data sources.
 
-A separate Word document is provided with:
+The system is designed for "plug-and-play" delivery:
 
-- Step-by-step instructions for adding CloudWatch as a data source  
-- How to create each required panel (SuccessCount, FailureCount, SuccessByAction, etc.)  
-- Example queries and recommended dashboard layout  
-- Guidance on how to interpret the system metrics and logs  
+Automated Provisioning: Upon deployment, the Grafana dashboard is automatically created and pre-configured with CloudWatch as the default data source.
 
-This README focuses on the system architecture and deployment workflow, while the accompanying Word file provides detailed instructions for building and using the Grafana dashboard.
+Intelligent Filtering: The dashboard features Linked Variables (Client & Action) that automatically filter metrics based on your selection.
+
+Latency Optimization: The variables are configured with an "On time range change" refresh policy. This ensures that even with AWS indexing delays, you can force the dashboard to pull new dimension names (like a new client name) simply by toggling the time range.
+
+Real-time Metrics: Success and failure counts, as well as action-based distributions, will populate the graphs automatically as soon as SQS messages are processed by the Lambda function. 
+
+# Note: Please ensure all changes in the Grafana UI or Terraform configuration are saved/applied immediately to ensure the dashboard remains synchronized with the latest infrastructure state.
+
+This README focuses on the system architecture and deployment workflow, while the accompanying Word file provides detailed instructions for using the Grafana dashboard.
